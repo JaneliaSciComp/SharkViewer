@@ -1223,10 +1223,12 @@
 
 
 	<script type='text/javascript'>
+window.onload=function(){
 	var swc = swc_parser(document.getElementById("swc").text);
 	var s = new SharkViewer({swc: swc, dom_element: 'container', center_node: -1, show_cones: false });
 	s.init()
 	s.animate();
+}
 	</script>
 </body>
 </html>

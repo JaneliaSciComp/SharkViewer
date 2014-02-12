@@ -1,14 +1,15 @@
 var SharkViewer = function (parameters) {
 	/* swc neuron json object:
-	 * 	{ id : {
-	 *		type: <type number of node (string)>,
-	 *		x: <x position of node (float)>,
-	 *		y: <y position of node (float)>,
-	 *		z: <z position of node (float)>,
-	 *		parent: <id number of node's parent (-1 if no parent)>,
-	 *		radius: <radius of node (float)>,
-	 * 		}
-	 */		
+	*	{ id : {
+	*		type: <type number of node (string)>,
+	*		x: <x position of node (float)>,
+	*		y: <y position of node (float)>,
+	*		z: <z position of node (float)>,
+	*		parent: <id number of node's parent (-1 if no parent)>,
+	*		radius: <radius of node (float)>,
+	*		}
+	*	}
+	*/		
 	this.swc = {}; 
 	//html element that will recieve webgl canvas
 	this.dom_element = 'container'; 
@@ -44,19 +45,21 @@ var SharkViewer = function (parameters) {
 //calculates bounding box for neuron object
 SharkViewer.prototype.calculateBoundingBox = function () {	
 	for (var node in this.swc) {
-		if (this.swc[node].x < this.boundingBox.xmin) this.boundingBox.xmin = this.swc[node].x;
-		if (this.swc[node].x > this.boundingBox.xmax) this.boundingBox.xmax = this.swc[node].x;
-		if (this.swc[node].y < this.boundingBox.ymin) this.boundingBox.ymin = this.swc[node].y
-		if (this.swc[node].y > this.boundingBox.ymax) this.boundingBox.ymax = this.swc[node].y
-		if (this.swc[node].z < this.boundingBox.zmin) this.boundingBox.zmin = this.swc[node].z;
-		if (this.swc[node].z > this.boundingBox.zmax) this.boundingBox.zmax = this.swc[node].z;
+		if (this.swc.hasOwnProperty(node)) {
+			if (this.swc[node].x < this.boundingBox.xmin) this.boundingBox.xmin = this.swc[node].x;
+			if (this.swc[node].x > this.boundingBox.xmax) this.boundingBox.xmax = this.swc[node].x;
+			if (this.swc[node].y < this.boundingBox.ymin) this.boundingBox.ymin = this.swc[node].y;
+			if (this.swc[node].y > this.boundingBox.ymax) this.boundingBox.ymax = this.swc[node].y;
+			if (this.swc[node].z < this.boundingBox.zmin) this.boundingBox.zmin = this.swc[node].z;
+			if (this.swc[node].z > this.boundingBox.zmax) this.boundingBox.zmax = this.swc[node].z;
+		}
 	}
 };
 
 //generates sphere mesh
 SharkViewer.prototype.generateSphere = function (node) {
 	var sphereMaterial = this.three_materials[ node.type ];
-	var r1 = node.radius || 0.01
+	var r1 = node.radius || 0.01;
 	var geometry = new THREE.SphereGeometry(r1);
 	var mesh = new THREE.Mesh(geometry, sphereMaterial);
 	mesh.position.x = node.x;
@@ -195,10 +198,10 @@ SharkViewer.prototype.init = function () {
 			'// gl_FragDepthExt = 0.5;',
 		'#endif',
 		'}'
-	 ].join("\n");
+	].join("\n");
 	 
-	 var vertexShaderCone = [
-	 	'attribute float radius;',
+	var vertexShaderCone = [
+		'attribute float radius;',
 		'attribute vec3 typeColor;',
 		'varying vec3 vColor;',
 		'varying vec2 sphereUv;',
@@ -229,9 +232,9 @@ SharkViewer.prototype.init = function () {
 		'	sphereUv = rotMat * sphereUv;',
 		'	sphereUv += vec2(0.5, 0.5); // map back from [-.5,.5] => [0,1]',
 		'}',
-	 ].join("\n");
+	].join("\n");
 	 
-	 var fragmentShaderCone = [
+	var fragmentShaderCone = [
 		'uniform sampler2D sphereTexture; // Imposter image of sphere',
 		'varying vec3 vColor;',
 		'varying vec2 sphereUv;',
@@ -243,18 +246,22 @@ SharkViewer.prototype.init = function () {
 		'	vec3 highlightColor = baseColor + sphereColors.ggg;',
 		'	gl_FragColor = vec4(highlightColor, sphereColors.a);',
 		'}',
-	 ].join("\n");
+	].join("\n");
 
 	if (this.effect === 'noeffect') this.effect = false;
 	 
 	//set up colors and materials based on color array
 	this.three_colors = [];
 	for (var color in this.colors) {
-		this.three_colors.push(new THREE.Color(this.colors[color]));
+		if (this.colors.hasOwnProperty(color)) {
+			this.three_colors.push(new THREE.Color(this.colors[color]));
+		}
 	}
 	this.three_materials = [];
 	for (var color in this.colors) {
-		this.three_materials.push(new THREE.MeshBasicMaterial({ color: this.colors[color] }));
+		if (this.colors.hasOwnProperty(color)) {
+			this.three_materials.push(new THREE.MeshBasicMaterial({ color: this.colors[color] }));
+		}
 	}
 		
 	//initialize bounding box
@@ -265,7 +272,7 @@ SharkViewer.prototype.init = function () {
 		'ymax' : this.swc['1'].y,
 		'zmin' : this.swc['1'].z,
 		'zmax' : this.swc['1'].z,
-	},
+	};
 	this.calculateBoundingBox();
 
 	//neuron centers around 1st node by default
@@ -274,7 +281,7 @@ SharkViewer.prototype.init = function () {
 	}
 	else{
 		this.center_node = this.center_node.toString();
-		this.center = [ swc[this.center_node].x, swc[this.center_node].y, swc[this.center_node].z ] ;
+		this.center = [ this.swc[this.center_node].x, this.swc[this.center_node].y, this.swc[this.center_node].z ] ;
 	}
 
 	//setup render
@@ -322,7 +329,7 @@ SharkViewer.prototype.init = function () {
 		{
 			particleScale: { type: 'f', value: particleScale },
 			sphereTexture: { type: 't', value: sphereImg },
-		}
+		};
 
 		for (var node in this.swc) {
 			if (this.swc.hasOwnProperty(node)) {
@@ -353,7 +360,7 @@ SharkViewer.prototype.init = function () {
 
 		if (this.show_cones){	
 			// Cone quad imposters, to link spheres together
-			 var coneAttributes = 
+			var coneAttributes = 
 			{
 				radius:   { type: "fv1", value: [] },
 				typeColor:   { type: "c", value: [] },
@@ -361,7 +368,7 @@ SharkViewer.prototype.init = function () {
 			var coneUniforms = 
 			{
 				sphereTexture: { type: 't', value: sphereImg },
-			}
+			};
 			var uvs = [
 				new THREE.Vector2(0.5, 0),
 				new THREE.Vector2(0.5, 1),
@@ -373,24 +380,24 @@ SharkViewer.prototype.init = function () {
 					if (this.swc[node].parent != -1) {
 						// Child/first position
 						var cone = this.generateCone(this.swc[node], this.swc[this.swc[node].parent]);
-						var ix2 = coneGeom.vertices.push(cone['child'].vertex);
-						coneAttributes.radius.value.push(cone['child'].radius);
-						coneAttributes.typeColor.value.push(cone['child'].color);
+						var ix2 = coneGeom.vertices.push(cone.child.vertex);
+						coneAttributes.radius.value.push(cone.child.radius);
+						coneAttributes.typeColor.value.push(cone.child.color);
 						
-						coneGeom.vertices.push(cone['parent'].vertex);
-						coneAttributes.radius.value.push(cone['parent'].radius);
-						coneAttributes.typeColor.value.push(cone['parent'].color);
+						coneGeom.vertices.push(cone.parent.vertex);
+						coneAttributes.radius.value.push(cone.parent.radius);
+						coneAttributes.typeColor.value.push(cone.parent.color);
 						
 						// Paint two triangles to make a cone-imposter quadrilateral
 						// Triangle #1
 						var coneFace = new THREE.Face3(ix2 - 1, ix2 - 1, ix2);
-						coneFace.vertexNormals = [ cone['normal1'], cone['normal2'], cone['normal2'] ];
+						coneFace.vertexNormals = [ cone.normal1, cone.normal2, cone.normal2 ];
 						coneGeom.faces.push(coneFace);
 						// Simple texture coordinates should be modified in the vertex shader
 						coneGeom.faceVertexUvs[0].push(uvs);
 						// Triangle #2
 						coneFace = new THREE.Face3(ix2, ix2, ix2-1);
-						coneFace.vertexNormals = [ cone['normal1'], cone['normal2'], cone['normal1'] ];
+						coneFace.vertexNormals = [ cone.normal1, cone.normal2, cone.normal1 ];
 						coneGeom.faces.push(coneFace);
 						coneGeom.faceVertexUvs[0].push(uvs);
 					}
@@ -426,7 +433,7 @@ SharkViewer.prototype.init = function () {
 		} 
 	}
 	
-	if (this.mode === 'skeleton' || (this.mode === 'sphere' && this.show_cones == false)) {
+	if (this.mode === 'skeleton' || this.show_cones === false) {
 		this.material = new THREE.LineBasicMaterial({ color: this.colors[this.colors.length-1] });
 		if (this.mode === 'skeleton') this.material.color.set(this.colors[0]);
 		this.geometry = new THREE.Geometry();
@@ -434,8 +441,8 @@ SharkViewer.prototype.init = function () {
 			if (this.swc.hasOwnProperty(node)) {
 				if (this.swc[node].parent != -1) {
 					var verticies = this.generateSkeleton(this.swc[node], this.swc[this.swc[node].parent]);
-					this.geometry.vertices.push(verticies['child']);
-					this.geometry.vertices.push(verticies['parent']);
+					this.geometry.vertices.push(verticies.child);
+					this.geometry.vertices.push(verticies.parent);
 				}
 			}
 		} 
