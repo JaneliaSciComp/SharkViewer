@@ -29,14 +29,13 @@ var SharkViewer = function (parameters) {
 	this.show_cones = true;
 	//color array, nodes of type 0 show as first color, etc. 
 	this.colors = [
-		0xff0000,
-		0x0000ff,
-		0x00ff00,
-		0xffff00,
-		0xff00ff,
-		0x0000ff,
-		0xff5500,
-		0x0080ff,
+		0x00be9e,
+		0x3919cb,
+		0x7d0bc4,
+		0xff6700,
+		0x3eef00,
+		0xffce00,
+		0xf50027,
 		0x606060,
 	]; 
 	this.setValues(parameters);
