@@ -33,34 +33,34 @@ swc json object:
 
 ##OPTIONS
 swc - swc neuron json object
-Default:  {}
+*Default*:  {}
 
 dom_element - html element that will recieve webgl canvas
 Defualt: 'container'
 
 mode - sphere (full 3-D rendering for nodes and connections, slow), particle (uses particle system to speed rendering and make it look better), or skeleton (no nodes, just connections, very fast)
-Default: 'particle'
+*Default*: 'particle'
 
 HEIGHT - height of canvas
-Default: window.innerHeight
+*Default*: window.innerHeight
 
 WIDTH - width of canvas
-Default: window.innerWidth
+*Default*: window.innerWidth
 
 center_node - which node to center neuron on (starts at 1), -1 to center at center of bounding box
-Default: 1
+*Default*: 1
 
 show_stats - shows fps rendering stats if true
-Default: false
+*Default*: false
 
 effect - Renders using effects to allow viewing with specialized equipment: noeffect (none), parallax (parallax barrier), rift (oculus rift)
-Default: 'noeffect'
+*Default*: 'noeffect'
 
 show_cones - show cones between cylindars for particle and sphere mode
-Default: true;
+*Default*: true;
 
 colors - color array for display, nodes of type 0 show as first color, etc. 
-Default:  [
+*Default*:  [
 	0x00be9e,
 	0x3919cb,
 	0x7d0bc4,
