@@ -1,20 +1,30 @@
 ##DESCRIPTION
 Shark Viewer is a web-based viewer for swc neuron files. It is written entirely in javascript using three.js.
-To view swc format guidelines vist: http://research.mssm.edu/cnic/swc.html
+To view swc format guidelines visit: http://research.mssm.edu/cnic/swc.html
 
 ##QUICK START
-1. load javascript files onto page
+1. Load javascript files onto page
+```
 <script src="js/threejs/three.js"></script>
 <script src="js/threejs/TrackballControls.js"></script>
 <script src="js/shark_viewer.js"></script>
-2. load a swc file into json. There is a helper function swc_parser(<swc text>) available, or you can write your own to process it server side and load via AJAX.
+```
+2. Load a swc file into json. There is a helper function swc_parser(swc_text) available, or you can write your own to process it server side and load via AJAX.
+```
 var  swc = swc_parser(document.getElementById("swc").text);
-3. Create a new shark viewer object. At a minimun you need to give it the swc json and a dom element to attach a canvas to.
+```
+3. Create a new shark viewer object. At a minimum you need to give it the swc json and a DOM element to attach a canvas to.
+```
 var s = new SharkViewer({ swc: swc, dom_element: 'container' });
-4. Initilize the shark viewer
+```
+4. Initialize the shark viewer
+```
 s.init();
+```
 5. Animate the shark viewer
+```
 s.animate();
+```
 
 Shark_Viewer.html shows an example of this setup.
 
@@ -35,8 +45,8 @@ swc json object:
 swc - swc neuron json object
 *Default*:  {}
 
-dom_element - html element that will recieve webgl canvas
-Defualt: 'container'
+dom_element - html element that will receive webgl canvas
+*Default*: 'container'
 
 mode - sphere (full 3-D rendering for nodes and connections, slow), particle (uses particle system to speed rendering and make it look better), or skeleton (no nodes, just connections, very fast)
 *Default*: 'particle'
@@ -56,7 +66,7 @@ show_stats - shows fps rendering stats if true
 effect - Renders using effects to allow viewing with specialized equipment: noeffect (none), parallax (parallax barrier), rift (oculus rift)
 *Default*: 'noeffect'
 
-show_cones - show cones between cylindars for particle and sphere mode
+show_cones - show cones between cylinders for particle and sphere mode
 *Default*: true;
 
 colors - color array for display, nodes of type 0 show as first color, etc. 
@@ -70,6 +80,7 @@ colors - color array for display, nodes of type 0 show as first color, etc.
 	0xf50027,
 	0x606060,
 ]
+
 
 
 Copyright (C) 2014 Janelia HHMI
