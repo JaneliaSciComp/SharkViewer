@@ -83,5 +83,3 @@ colors - color array for display, nodes of type 0 show as first color, etc.
 
 
 
-Copyright (C) 2014 Janelia HHMI
-Written by Charlotte Weaver and Christopher Bruns
