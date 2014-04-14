@@ -524,24 +524,35 @@ function swc_parser(swc_file) {
 	//split by lines
 	var swc_ar = swc_file.split("\n");
 	var swc_json = {};
+
+	var float = '-?\\d*(?:\\.\\d+)?';
+	var pattern = new RegExp('^[ \\t]*(' + [
+		'\\d+',   // index
+		'[0-7]',  // type
+		float,    // x
+		float,    // y
+		float,    // z
+		float,    // radius
+		'-1|\\d+' // parent
+	].join(')[ \\t]+(') + ')[ \\t]*$');
+
 	swc_ar.forEach(function (e) {
 		//if line is good, put into json
-		if (/^\d/.test(e)) {
-			var split_str = e.split(" ");
-			// id: x, y, z, parent, radius
-			swc_json[split_str[0]] = {
-				'type' : parseInt(split_str[1]),
-				'x' : parseFloat(split_str[2]),
-				'y' : parseFloat(split_str[3]),
-				'z' : parseFloat(split_str[4]),
-				'parent' : parseInt(split_str[6]),
-				'radius' : parseFloat(split_str[5]),
+		var match = e.match(pattern);
+		if (match) {
+			swc_json[match[1]] = {
+				'type'   : parseInt  (match[2]),
+				'x'      : parseFloat(match[3]),
+				'y'      : parseFloat(match[4]),
+				'z'      : parseFloat(match[5]),
+				'radius' : parseFloat(match[6]),
+				'parent' : parseInt  (match[7]),
 			};
 		}
-	});		
+	});
 
 	//return json
-	return swc_json;		
+	return swc_json;
 }
 
 
