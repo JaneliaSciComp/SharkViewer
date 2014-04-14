@@ -528,7 +528,7 @@ function swc_parser(swc_file) {
 	var float = '-?\\d*(?:\\.\\d+)?';
 	var pattern = new RegExp('^[ \\t]*(' + [
 		'\\d+',   // index
-		'[0-7]',  // type
+		'\\d+',  // type
 		float,    // x
 		float,    // y
 		float,    // z
