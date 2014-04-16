@@ -38,6 +38,7 @@ var SharkViewer = function (parameters) {
 		0xf50027,
 		0x606060,
 	]; 
+	this.metadata = false;
 	this.setValues(parameters);
 };
 
@@ -93,6 +94,37 @@ SharkViewer.prototype.generateConeGeometry = function (node, node_parent) {
 //generates particle verticies
 SharkViewer.prototype.generateParticle = function (node) {
 	return new THREE.Vector3(node.x, node.y, node.z);
+};
+
+SharkViewer.prototype.createMetadataElement = function(metadata, colors) {
+	function convertToHexColor(i) {
+		var result = "#000000";
+		if      (i >= 0    && i <= 15)          { result = "#00000" + i.toString(16); }
+		else if (i >= 16   && i <= 255)         { result = "#0000"  + i.toString(16); }
+		else if (i >= 256  && i <= 4095)        { result = "#000"   + i.toString(16); }
+		else if (i >= 4096 && i <= 65535)       { result = "#00"    + i.toString(16); }
+		else if (i >= 65536 && i <= 1048575)    { result = "#0"     + i.toString(16); }
+		else if (i >= 1048576 && i <= 16777215) { result = "#"      + i.toString(16); }
+		return result;
+	}
+	var metadiv = document.createElement('div');
+	metadiv.id='node_key';
+	metadiv.style.position = 'absolute';
+	metadiv.style.top = '0px';
+	metadiv.style.right = '10px';
+	metadiv.style.border = "solid 1px #aaaaaa";
+	metadiv.style.borderRadius = "5px";
+	metadiv.style.padding = "2px";
+	var toinnerhtml = "";
+	metadata.forEach( function(m){
+		var mtype = parseInt(m.type);
+		var three_color = (mtype < colors.length) ? colors[mtype]: colors[0];
+		var css_color = convertToHexColor(three_color);
+		toinnerhtml += "<div><span style='height:10px;width:10px;background:" + css_color +
+					";display:inline-block;'></span> : " + m.label +"</div>";
+	});
+    metadiv.innerHTML = toinnerhtml; 
+	return metadiv;
 };
 
 //generates skeleton verticies
@@ -467,6 +499,10 @@ SharkViewer.prototype.init = function () {
 		this.stats.domElement.style.top = '0px';
 		this.stats.domElement.style.zIndex = 100;
 		document.getElementById(this.dom_element).appendChild(this.stats.domElement);
+	}
+	if (this.metadata){
+		var melement = this.createMetadataElement(this.metadata, this.colors);
+		document.getElementById(this.dom_element).appendChild(melement);
 	}
 
 	//Effects

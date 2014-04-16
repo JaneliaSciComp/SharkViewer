@@ -8,7 +8,7 @@
 			
 		<script src="js/threejs/three.js"></script>
 		<script src="js/threejs/TrackballControls.js"></script>
-		<script src="js/shark_viewer.js"></script>
+		<script src="./js/shark_viewer.js"></script>
 		<!-- optional only if show_stats = true -->
 		<script src="js/threejs/Stats.js"></script>
 		<!-- optional only if effect='rift' -->
@@ -39,6 +39,9 @@
  7 0 18.461960 30.289471 8.586000 0.447463 3
  8 6 19.420759 28.730757 9.558000 0.496217 7
 </script>
+<script id='metadata_swc' type='text/plain'>
+[{"label":"undefined","type":0},{"label":"soma","type":1},{"label":"axon","type":2},{"label":"dendrite","type":3},{"label":"apical dendrite","type":4},{"label":"fork point","type":5},{"label":"end point","type":6},{"label":"custom","type":7}]
+</script>
 </head>
 <body>
 	<!-- three.js container -->
@@ -49,7 +52,8 @@
 	<script type='text/javascript'>
 window.onload=function(){
 	var swc = swc_parser(document.getElementById("swc").text);
-	var s = new SharkViewer({swc: swc, dom_element: 'container', center_node: -1 });
+	var mdata = JSON.parse(document.getElementById("metadata_swc").text);
+	var s = new SharkViewer({swc: swc, dom_element: 'container', center_node: -1, show_stats: true, metadata: mdata});
 	s.init();
 	s.animate();
 }
