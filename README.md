@@ -1,3 +1,5 @@
+[![Picture](html/images/gray_janelia_logo_small.png)](http://www.janelia.org)
+![Picture](html/images/SharkLogo.png)
 ##DESCRIPTION
 Shark Viewer is a web-based viewer for swc neuron files. It is written entirely in javascript using three.js.
 To view swc format guidelines visit: http://research.mssm.edu/cnic/swc.html
@@ -69,7 +71,7 @@ effect - Renders using effects to allow viewing with specialized equipment: noef
 show_cones - show cones between cylinders for particle and sphere mode
 *Default*: true;
 
-colors - color array for display, nodes of type 0 show as first color, etc. 
+colors - color array for display, nodes of type 0 show as first color, etc.
 *Default*:  [
 	0x00be9e,
 	0x3919cb,
@@ -81,5 +83,16 @@ colors - color array for display, nodes of type 0 show as first color, etc.
 	0x606060,
 ]
 
+metadata - array of javascript objects with labels and type numbers to display as legend (type number matches to type column in swc file)  format:
+*Default*: false
+Example:
+```
+[{"label":"undefined","type":0},{"label":"soma","type":1}]
+```
 
+##Author Information
+SharkViewer was written by Charlotte Weaver (<weaverc10@janelia.hhmi.org>) and Christopher Bruns (<brunsc@janelia.hhmi.org>)
 
+[Scientific Computing](http://www.janelia.org/research-resources/computing-resources)  
+[Janelia Farm Research Campus](http://www.janelia.org)  
+[Howard Hughes Medical Institute](http://www.hhmi.org)
