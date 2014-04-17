@@ -119,7 +119,9 @@ SharkViewer.prototype.createMetadataElement = function(metadata, colors) {
 	metadata.forEach( function(m){
 		var mtype = parseInt(m.type);
 		var three_color = (mtype < colors.length) ? colors[mtype]: colors[0];
-		var css_color = convertToHexColor(three_color);
+		var css_color = three_color;
+        if ( typeof three_color != 'string') css_color = convertToHexColor(three_color);
+        console.log(three_color);
 		toinnerhtml += "<div><span style='height:10px;width:10px;background:" + css_color +
 					";display:inline-block;'></span> : " + m.label +"</div>";
 	});
