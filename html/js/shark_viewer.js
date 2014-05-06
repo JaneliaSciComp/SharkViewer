@@ -39,6 +39,7 @@ var SharkViewer = function (parameters) {
 		0x606060,
 	]; 
 	this.metadata = false;
+    
 	this.setValues(parameters);
 };
 
@@ -155,12 +156,20 @@ SharkViewer.prototype.generateCone = function (node, node_parent) {
 	//normals
 	var n1 = new THREE.Vector3().subVectors(cone_parent.vertex, cone_child.vertex);
 	var n2 = n1.clone().negate();
+        
+    // cone cap plane equations
+    var plane1 = new THREE.Vector4( n1.x, n1.y, n1.z, -n1.dot(cone_parent.vertex) )
+    var plane2 = new THREE.Vector4( n2.x, n2.y, n2.z, -n2.dot(cone_child.vertex) )
+        
+    // console.log(plane1); 
 
 	return {
 		'child' : cone_child, 
 		'parent' : cone_parent, 
 		'normal1' : n1, 
-		'normal2': n2
+		'normal2': n2, 
+        'plane1' : plane1, 
+        'plane2' : plane2
 	};
 };
 		
@@ -192,6 +201,7 @@ SharkViewer.prototype.init = function () {
 		'attribute vec3 typeColor;',
 		'varying vec3 vColor;',
 		'varying vec4 mvPosition;',
+        'varying float vRadius;',
 		'void main() ',
 		'{',
 			'vColor = vec3(typeColor); // set RGB color associated to vertex; use later in fragment shader.',
@@ -200,6 +210,7 @@ SharkViewer.prototype.init = function () {
 			'// gl_PointSize = size;',
 			'gl_PointSize = radius * ((particleScale*2.0) / length(mvPosition.z));',
 			'gl_Position = projectionMatrix * mvPosition;',
+			'vRadius = radius;',
 		'}'
     ].join("\n");
     
@@ -209,6 +220,7 @@ SharkViewer.prototype.init = function () {
 		'uniform mat4 projectionMatrix;',
 		'varying vec3 vColor; // colors associated to vertices; assigned by vertex shader',
 		'varying vec4 mvPosition;',
+        'varying float vRadius;',
 		'void main() ',
 		'{',
 			'// what part of the sphere image?',
@@ -228,7 +240,12 @@ SharkViewer.prototype.init = function () {
 			'gl_FragColor = vec4(highlightColor, sphereColors.a);',
 			'// TODO blue channel contains depth offset, but we cannot use gl_FragDepth in webgl?',
 		'#ifdef GL_EXT_frag_depth',
-			'// gl_FragDepthExt = 0.5;',
+            'float far = gl_DepthRange.far; float near = gl_DepthRange.near;', 
+            'float dz = sphereColors.b * vRadius;', 
+            'vec4 clipPos = projectionMatrix * (mvPosition + vec4(0, 0, dz, 0));', 
+            'float ndc_depth = clipPos.z/clipPos.w;', 
+            'float depth = (((far-near) * ndc_depth) + near + far) / 2.0;', 
+			'gl_FragDepthEXT = depth;',
 		'#endif',
 		'}'
 	].join("\n");
@@ -236,13 +253,17 @@ SharkViewer.prototype.init = function () {
 	var vertexShaderCone = [
 		'attribute float radius;',
 		'attribute vec3 typeColor;',
+        'attribute vec4 plane1;', 
 		'varying vec3 vColor;',
 		'varying vec2 sphereUv;',
+		'varying vec4 mvPosition;',
+        'varying float depthScale;',
+        'varying vec4 vPlane1;',
 		'void main() ',
 		'{',
 		'	// TODO - offset cone position for different sphere sizes',
 		'	// TODO - implement depth buffer on Chrome',
-		'	vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);',
+		'	mvPosition = modelViewMatrix * vec4(position, 1.0);',
 		'	// Expand quadrilateral perpendicular to both view/screen direction and cone axis',
 		'	vec3 cylAxis = (modelViewMatrix * vec4(normal, 0.0)).xyz; // convert cone axis to camera space',
 		'	vec3 sideDir = normalize(cross(vec3(0.0,0.0,-1.0), cylAxis));',
@@ -264,13 +285,21 @@ SharkViewer.prototype.init = function () {
 		'		s,  c);',
 		'	sphereUv = rotMat * sphereUv;',
 		'	sphereUv += vec2(0.5, 0.5); // map back from [-.5,.5] => [0,1]',
+		'	// We are painting an angled cone onto a flat quad, so depth correction is complicated',
+        '   depthScale = radius * length(cylAxis) / length(cylAxis.xy); // correct depth for foreshortening',
+        '   vPlane1 = modelViewMatrix * plane1;', 
 		'}',
 	].join("\n");
 	 
 	var fragmentShaderCone = [
+		'#extension GL_EXT_frag_depth : enable',
 		'uniform sampler2D sphereTexture; // Imposter image of sphere',
+		'uniform mat4 projectionMatrix;',
 		'varying vec3 vColor;',
 		'varying vec2 sphereUv;',
+		'varying vec4 mvPosition;',
+        'varying float depthScale;',
+        'varying vec4 vPlane1;',
 		'void main() ',
 		'{',
 		'	vec4 sphereColors = texture2D(sphereTexture, sphereUv);',
@@ -278,6 +307,16 @@ SharkViewer.prototype.init = function () {
 		'	vec3 baseColor = vColor * sphereColors.r;',
 		'	vec3 highlightColor = baseColor + sphereColors.ggg;',
 		'	gl_FragColor = vec4(highlightColor, sphereColors.a);',
+		'#ifdef GL_EXT_frag_depth',
+            'float dz = sphereColors.b * depthScale;', 
+            'vec4 mvp = mvPosition + vec4(0, 0, dz, 0);', 
+            '// if (dot(mvp, vPlane1) < -0.1) discard;', 
+            'vec4 clipPos = projectionMatrix * mvp;', 
+            'float ndc_depth = clipPos.z/clipPos.w;', 
+            'float far = gl_DepthRange.far; float near = gl_DepthRange.near;', 
+            'float depth = (((far-near) * ndc_depth) + near + far) / 2.0;', 
+			'gl_FragDepthEXT = depth;',
+		'#endif',
 		'}',
 	].join("\n");
 
@@ -324,6 +363,9 @@ SharkViewer.prototype.init = function () {
 	this.renderer.setClearColorHex(0xffffff, 1);
 	this.renderer.setSize(this.WIDTH , this.HEIGHT);
 	document.getElementById(this.dom_element).appendChild(this.renderer.domElement);
+    var gl = this.renderer.context
+    // Activate depth extension, if available
+    gl.getExtension('EXT_frag_depth')
 
 	// create a scene
 	this.scene = new THREE.Scene();
@@ -403,6 +445,7 @@ SharkViewer.prototype.init = function () {
 			{
 				radius:   { type: "fv1", value: [] },
 				typeColor:   { type: "c", value: [] },
+			    plane1:   { type: "vf4", value: [] }, // TODO I have no idea what to put here yet...
 			};
 			var coneUniforms = 
 			{
@@ -422,6 +465,7 @@ SharkViewer.prototype.init = function () {
 						var ix2 = coneGeom.vertices.push(cone.child.vertex);
 						coneAttributes.radius.value.push(cone.child.radius);
 						coneAttributes.typeColor.value.push(cone.child.color);
+                        coneAttributes.plane1.value.push(cone.plane1);
 						
 						coneGeom.vertices.push(cone.parent.vertex);
 						coneAttributes.radius.value.push(cone.parent.radius);
