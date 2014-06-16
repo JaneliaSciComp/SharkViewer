@@ -1,7 +1,13 @@
 ![Picture](html/images/SharkLogo.png)
+
+![Picture](https://zenodo.org/badge/doi/10.5281/zenodo.10053.png)
+
 ##DESCRIPTION
 Shark Viewer is a web-based viewer for swc neuron files. It is written entirely in javascript using three.js.
 To view swc format guidelines visit: http://research.mssm.edu/cnic/swc.html
+
+##EXAMPLE
+http://janeliascicomp.github.io/SharkViewer/
 
 ##QUICK START
 1) Load javascript files onto page

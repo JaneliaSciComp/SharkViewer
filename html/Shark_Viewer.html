@@ -11,10 +11,6 @@
 		<script src="./js/shark_viewer.js"></script>
 		<!-- optional only if show_stats = true -->
 		<script src="js/threejs/Stats.js"></script>
-		<!-- optional only if effect='rift' -->
-		<script src="js/threejs/OculusRiftEffect.js"></script>
-		<!-- optional only if effect='parallax' -->
-		<script src="js/threejs/ParallaxBarrierEffect.js"></script>
 <script id="swc" type='text/plain'>
 # ORIGINAL_SOURCE NeuronStudio 0.8.80
 # CREATURE
@@ -44,19 +40,56 @@
 </script>
 </head>
 <body>
+	<label for='swc_input'>Upload a swc file to view it in the SharkViewer:</label><input type='file' name='swc_input' id='swc_input' />
 	<!-- three.js container -->
-    	<div id="container"></div>
+    	<div id="container" style='position:relative'></div>
 	<!-- info on screen display -->
 
 
 	<script type='text/javascript'>
-window.onload=function(){
-	var swc = swc_parser(document.getElementById("swc").text);
-	var mdata = JSON.parse(document.getElementById("metadata_swc").text);
-	var s = new SharkViewer({swc: swc, dom_element: 'container', center_node: -1, show_stats: true, metadata: mdata});
-	s.init();
-	s.animate();
-}
+	var mdata;
+	function readSwcFile(e) {
+		var f = e.target.files[0]; 
+		console.log(f);
+		if (f) {
+			var r = new FileReader();
+			r.onload = function(e2) { 
+				var swc_txt = e2.target.result;
+				var swc = swc_parser(swc_txt);
+				if ( Object.keys(swc).length > 0 ) {
+					document.getElementById('container').innerHTML = "";
+					var s = new SharkViewer({
+						swc: swc, 
+						dom_element: 'container', 
+						center_node: -1, 
+						show_stats: true, 
+						metadata: mdata
+					});
+					s.init();
+					s.animate();
+				}
+				else {
+					alert("Please upload a valid swc file.");
+				}
+			}
+			r.readAsText(f);
+		} else { 
+		      alert("Failed to load file");
+		}
+	}
+	window.onload = function() {
+		document.getElementById('swc_input').addEventListener('change', readSwcFile, false);
+		var swc = swc_parser(document.getElementById("swc").text);
+		mdata = JSON.parse(document.getElementById("metadata_swc").text);
+		var s = new SharkViewer({
+			swc: swc, 
+			dom_element: 'container', 
+			center_node: -1, 
+			show_stats: true, 
+			metadata: mdata});
+		s.init();
+		s.animate();
+	}
 	</script>
 </body>
 </html>

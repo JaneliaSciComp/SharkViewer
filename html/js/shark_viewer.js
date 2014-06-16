@@ -39,6 +39,7 @@ var SharkViewer = function (parameters) {
 		0x606060,
 	]; 
 	this.metadata = false;
+	
 	this.setValues(parameters);
 };
 
@@ -120,12 +121,12 @@ SharkViewer.prototype.createMetadataElement = function(metadata, colors) {
 		var mtype = parseInt(m.type);
 		var three_color = (mtype < colors.length) ? colors[mtype]: colors[0];
 		var css_color = three_color;
-        if ( typeof three_color != 'string') css_color = convertToHexColor(three_color);
-        console.log(three_color);
+		if ( typeof three_color != 'string') css_color = convertToHexColor(three_color);
+		console.log(three_color);
 		toinnerhtml += "<div><span style='height:10px;width:10px;background:" + css_color +
 					";display:inline-block;'></span> : " + m.label +"</div>";
 	});
-    metadiv.innerHTML = toinnerhtml; 
+	metadiv.innerHTML = toinnerhtml; 
 	return metadiv;
 };
 
@@ -155,12 +156,12 @@ SharkViewer.prototype.generateCone = function (node, node_parent) {
 	//normals
 	var n1 = new THREE.Vector3().subVectors(cone_parent.vertex, cone_child.vertex);
 	var n2 = n1.clone().negate();
-
+		
 	return {
 		'child' : cone_child, 
 		'parent' : cone_parent, 
 		'normal1' : n1, 
-		'normal2': n2
+		'normal2': n2, 
 	};
 };
 		
@@ -192,6 +193,7 @@ SharkViewer.prototype.init = function () {
 		'attribute vec3 typeColor;',
 		'varying vec3 vColor;',
 		'varying vec4 mvPosition;',
+		'varying float vRadius;',
 		'void main() ',
 		'{',
 			'vColor = vec3(typeColor); // set RGB color associated to vertex; use later in fragment shader.',
@@ -200,15 +202,17 @@ SharkViewer.prototype.init = function () {
 			'// gl_PointSize = size;',
 			'gl_PointSize = radius * ((particleScale*2.0) / length(mvPosition.z));',
 			'gl_Position = projectionMatrix * mvPosition;',
+			'vRadius = radius;',
 		'}'
-    ].join("\n");
-    
-	var fragementShader = [
+	].join("\n");
+	
+	var fragmentShader = [
 		'#extension GL_EXT_frag_depth : enable',
 		'uniform sampler2D sphereTexture; // Imposter image of sphere',
 		'uniform mat4 projectionMatrix;',
 		'varying vec3 vColor; // colors associated to vertices; assigned by vertex shader',
 		'varying vec4 mvPosition;',
+		'varying float vRadius;',
 		'void main() ',
 		'{',
 			'// what part of the sphere image?',
@@ -228,7 +232,12 @@ SharkViewer.prototype.init = function () {
 			'gl_FragColor = vec4(highlightColor, sphereColors.a);',
 			'// TODO blue channel contains depth offset, but we cannot use gl_FragDepth in webgl?',
 		'#ifdef GL_EXT_frag_depth',
-			'// gl_FragDepthExt = 0.5;',
+			'float far = gl_DepthRange.far; float near = gl_DepthRange.near;', 
+			'float dz = sphereColors.b * vRadius;', 
+			'vec4 clipPos = projectionMatrix * (mvPosition + vec4(0, 0, dz, 0));', 
+			'float ndc_depth = clipPos.z/clipPos.w;', 
+			'float depth = (((far-near) * ndc_depth) + near + far) / 2.0;', 
+			'gl_FragDepthEXT = depth;',
 		'#endif',
 		'}'
 	].join("\n");
@@ -238,11 +247,13 @@ SharkViewer.prototype.init = function () {
 		'attribute vec3 typeColor;',
 		'varying vec3 vColor;',
 		'varying vec2 sphereUv;',
+		'varying vec4 mvPosition;',
+		'varying float depthScale;',
 		'void main() ',
 		'{',
 		'	// TODO - offset cone position for different sphere sizes',
 		'	// TODO - implement depth buffer on Chrome',
-		'	vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);',
+		'	mvPosition = modelViewMatrix * vec4(position, 1.0);',
 		'	// Expand quadrilateral perpendicular to both view/screen direction and cone axis',
 		'	vec3 cylAxis = (modelViewMatrix * vec4(normal, 0.0)).xyz; // convert cone axis to camera space',
 		'	vec3 sideDir = normalize(cross(vec3(0.0,0.0,-1.0), cylAxis));',
@@ -264,13 +275,22 @@ SharkViewer.prototype.init = function () {
 		'		s,  c);',
 		'	sphereUv = rotMat * sphereUv;',
 		'	sphereUv += vec2(0.5, 0.5); // map back from [-.5,.5] => [0,1]',
+		'	// We are painting an angled cone onto a flat quad, so depth correction is complicated',
+		'   float foreshortening = length(cylAxis) / length(cylAxis.xy); // correct depth for foreshortening',
+		'   // foreshortening limit is a tradeoff between overextruded cone artifacts, and depth artifacts',
+		'   if (foreshortening > 4.0) foreshortening = 0.9; // hack to not pop out at extreme angles...',
+		'   depthScale = radius * foreshortening; // correct depth for foreshortening',
 		'}',
 	].join("\n");
 	 
 	var fragmentShaderCone = [
+		'#extension GL_EXT_frag_depth : enable',
 		'uniform sampler2D sphereTexture; // Imposter image of sphere',
+		'uniform mat4 projectionMatrix;',
 		'varying vec3 vColor;',
 		'varying vec2 sphereUv;',
+		'varying vec4 mvPosition;',
+		'varying float depthScale;',
 		'void main() ',
 		'{',
 		'	vec4 sphereColors = texture2D(sphereTexture, sphereUv);',
@@ -278,6 +298,15 @@ SharkViewer.prototype.init = function () {
 		'	vec3 baseColor = vColor * sphereColors.r;',
 		'	vec3 highlightColor = baseColor + sphereColors.ggg;',
 		'	gl_FragColor = vec4(highlightColor, sphereColors.a);',
+		'#ifdef GL_EXT_frag_depth',
+			'float dz = sphereColors.b * depthScale;', 
+			'vec4 mvp = mvPosition + vec4(0, 0, dz, 0);', 
+			'vec4 clipPos = projectionMatrix * mvp;', 
+			'float ndc_depth = clipPos.z/clipPos.w;', 
+			'float far = gl_DepthRange.far; float near = gl_DepthRange.near;', 
+			'float depth = (((far-near) * ndc_depth) + near + far) / 2.0;', 
+			'gl_FragDepthEXT = depth;',
+		'#endif',
 		'}',
 	].join("\n");
 
@@ -324,6 +353,9 @@ SharkViewer.prototype.init = function () {
 	this.renderer.setClearColorHex(0xffffff, 1);
 	this.renderer.setSize(this.WIDTH , this.HEIGHT);
 	document.getElementById(this.dom_element).appendChild(this.renderer.domElement);
+	var gl = this.renderer.context
+	// Activate depth extension, if available
+	gl.getExtension('EXT_frag_depth')
 
 	// create a scene
 	this.scene = new THREE.Scene();
@@ -383,7 +415,7 @@ SharkViewer.prototype.init = function () {
 			uniforms : customUniforms,
 			attributes : customAttributes,
 			vertexShader : vertexShader,
-			fragmentShader : fragementShader,
+			fragmentShader : fragmentShader,
 			transparent : true, 
 			// alphaTest: 0.5,  // if having transparency issues, try including: alphaTest: 0.5, 
 			depthTest : true,
