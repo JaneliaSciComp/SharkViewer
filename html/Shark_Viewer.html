@@ -57,7 +57,9 @@
 				var swc_txt = e2.target.result;
 				var swc = swc_parser(swc_txt);
 				if ( Object.keys(swc).length > 0 ) {
+					//remove previous neuron
 					document.getElementById('container').innerHTML = "";
+
 					var s = new SharkViewer({
 						swc: swc, 
 						dom_element: 'container', 

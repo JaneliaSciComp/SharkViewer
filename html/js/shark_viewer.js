@@ -557,7 +557,7 @@ SharkViewer.prototype.init = function () {
 	}
 
 	//Controls
-	this.controls = new THREE.TrackballControls(this.camera, document.getElementById(this.dom_element));
+	this.controls = new THREE.TrackballControls(this.camera, this.renderer.domElement);
 	this.controls.addEventListener('change', this.render.bind(this));
 };
 
