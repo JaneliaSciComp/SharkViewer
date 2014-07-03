@@ -2,6 +2,9 @@
 
 ![Picture](https://zenodo.org/badge/doi/10.5281/zenodo.10053.png)
 
+##NEW
+06-18-2014 - Serverless SharkViewer! Now the html/Shark\_Viewer.html file allows you to load and view your own swc files without a server. Simply download the repository and open Shark\_Viewer.html in a browser, then use the form to view your own swc files.  
+
 ##DESCRIPTION
 Shark Viewer is a web-based viewer for swc neuron files. It is written entirely in javascript using three.js.
 To view swc format guidelines visit: http://research.mssm.edu/cnic/swc.html
@@ -10,6 +13,11 @@ To view swc format guidelines visit: http://research.mssm.edu/cnic/swc.html
 http://janeliascicomp.github.io/SharkViewer/
 
 ##QUICK START
+1) Open html/Shark\_Viewer.html in a modern browser.
+
+2) Click 'Choose File' button to load a swc file. 
+
+## HOW TO RUN
 1) Load javascript files onto page
 ```
 <script src="js/threejs/three.js"></script>
