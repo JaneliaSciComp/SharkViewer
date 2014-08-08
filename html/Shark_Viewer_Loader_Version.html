@@ -19,7 +19,7 @@
 	<script type="text/javascript">
 	window.onload = function() {
 		var stats, scene, renderer;
-		var camera;
+		var camera, fov;
 		if( !init() )	animate();
 
 		// init the scene
@@ -35,7 +35,8 @@
 			scene = new THREE.Scene();
 
 			// put a camera in the scene
-			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100000);
+			fov = 45;
+			camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 1, 100000);
 			camera.position.set(0, 0, 5);
 			scene.add(camera);
 			controls = new THREE.TrackballControls(camera, renderer.domElement);
@@ -56,7 +57,7 @@
 		}
 		var L = new THREE.SWCLoader;
 		//SWCLoader.load(filename, [mode : sphere, particle, or skeleton], onLoadCallback)
-		L.load('test.swc', 'sphere', function(data){
+		L.load('swc/test.swc', 'sphere', fov, window.innerHeight, function(data){
 			scene.add(data);
 			render();
 		});
