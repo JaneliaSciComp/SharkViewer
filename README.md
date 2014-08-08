@@ -3,6 +3,9 @@
 ![Picture](https://zenodo.org/badge/doi/10.5281/zenodo.10053.png)
 
 ##NEW
+08-08-2014 - Three.js loader version: html/js/sharkviewer_loader.js
+If you want to use the neuron rendered from SharViewer in another scene use this version. html/Shark\_Viewer\_Loader\_Version.html shows an example of how to use it.
+
 06-18-2014 - Serverless SharkViewer! Now the html/Shark\_Viewer.html file allows you to load and view your own swc files without a server. Simply download the repository and open Shark\_Viewer.html in a browser, then use the form to view your own swc files.  
 
 ##DESCRIPTION
