@@ -350,7 +350,8 @@ SharkViewer.prototype.init = function () {
 	this.renderer = new THREE.WebGLRenderer({
 		antialias : true,	// to get smoother output
 	});
-	this.renderer.setClearColorHex(0xffffff, 1);
+	this.renderer.setClearColor(0xffffff, 1);
+	//this.renderer.setSize(100 , 150);
 	this.renderer.setSize(this.WIDTH , this.HEIGHT);
 	document.getElementById(this.dom_element).appendChild(this.renderer.domElement);
 	var gl = this.renderer.context
@@ -389,7 +390,7 @@ SharkViewer.prototype.init = function () {
 		// properties that may vary from particle to particle. only accessible in vertex shaders!
 		//	(can pass color info to fragment shader via vColor.)
 		// compute scale for particles, in pixels
-		var particleScale =  0.5 * this.HEIGHT / Math.tan(0.5 * fov * Math.PI / 180.0);
+		var particleScale =  (0.5 * this.HEIGHT * this.renderer.devicePixelRatio) / Math.tan(0.5 * fov * Math.PI / 180.0);
 	
 		var customAttributes = 
 		{
@@ -425,7 +426,7 @@ SharkViewer.prototype.init = function () {
 		});
 
 
-		var particles = new THREE.ParticleSystem(this.geometry, this.material);
+		var particles = new THREE.PointCloud(this.geometry, this.material);
 		particles.sortParticles = false;
 		this.neuron.add(particles);
 
