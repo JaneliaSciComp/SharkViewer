@@ -357,7 +357,7 @@ SharkViewer.prototype.init = function () {
 		// properties that may vary from particle to particle. only accessible in vertex shaders!
 		//	(can pass color info to fragment shader via vColor.)
 		// compute scale for particles, in pixels
-		var particleScale =  0.5 * this.HEIGHT / Math.tan(0.5 * fov * Math.PI / 180.0);
+		var particleScale =  (0.5 * this.HEIGHT * this.renderer.devicePixelRatio) / Math.tan(0.5 * fov * Math.PI / 180.0);
 	
 		var customAttributes = 
 		{
