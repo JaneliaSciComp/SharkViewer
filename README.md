@@ -4,13 +4,13 @@
 
 ##NEW
 08-08-2014 - Three.js loader version: html/js/sharkviewer_loader.js
-If you want to use the neuron rendered from SharViewer in another scene use this version. html/Shark\_Viewer\_Loader\_Version.html shows an example of how to use it.
+If you want to use the neuron rendered from SharkViewer in another scene use this version. html/Shark\_Viewer\_Loader\_Version.html shows an example of how to use it.
 
-06-18-2014 - Serverless SharkViewer! Now the html/Shark\_Viewer.html file allows you to load and view your own swc files without a server. Simply download the repository and open Shark\_Viewer.html in a browser, then use the form to view your own swc files.  
+06-18-2014 - Serverless SharkViewer! Now the html/Shark\_Viewer.html file allows you to load and view your own SWC files without a server. Simply download the repository and open Shark\_Viewer.html in a browser, then use the form to view your own SWC files.  
 
 ##DESCRIPTION
-Shark Viewer is a web-based viewer for swc neuron files. It is written entirely in javascript using three.js.
-To view swc format guidelines visit: http://research.mssm.edu/cnic/swc.html
+SharkViewer is a web-based viewer for SWC neuron files. It is written entirely in JavaScript using Three.js.
+To view SWC format guidelines visit: http://research.mssm.edu/cnic/swc.html
 
 ##EXAMPLE
 http://janeliascicomp.github.io/SharkViewer/
@@ -18,7 +18,7 @@ http://janeliascicomp.github.io/SharkViewer/
 ##QUICK START
 1) Open html/Shark\_Viewer.html in a modern browser.
 
-2) Click 'Choose File' button to load a swc file. 
+2) Click 'Choose File' button to load a SWC file. 
 
 ## HOW TO RUN
 1) Load javascript files onto page
@@ -27,19 +27,19 @@ http://janeliascicomp.github.io/SharkViewer/
 <script src="js/threejs/TrackballControls.js"></script>
 <script src="js/shark_viewer.js"></script>
 ```
-2) Load a swc file into json. There is a helper function swc_parser(swc_text) available, or you can write your own to process it server side and load via AJAX.
+2) Load a SWC file into json. There is a helper function swc_parser(swc_text) available, or you can write your own to process it server side and load via AJAX.
 ```
 var  swc = swc_parser(document.getElementById("swc").text);
 ```
-3) Create a new shark viewer object. At a minimum you need to give it the swc json and a DOM element to attach a canvas to.
+3) Create a new SharkViewer object. At a minimum you need to give it the SWC JSON and a DOM element to attach a canvas to.
 ```
 var s = new SharkViewer({ swc: swc, dom_element: 'container' });
 ```
-4) Initialize the shark viewer
+4) Initialize the SharkViewer
 ```
 s.init();
 ```
-5) Animate the shark viewer
+5) Animate the SharkViewer
 ```
 s.animate();
 ```
