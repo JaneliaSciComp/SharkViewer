@@ -109,7 +109,7 @@ Example:
 ##Author Information
 SharkViewer was written by Charlotte Weaver (<weaverc10@janelia.hhmi.org>) and Christopher Bruns (<brunsc@janelia.hhmi.org>)
 
-[![Picture](html/images/gray_janelia_logo_small.png)](http://www.janelia.org)
+[![Picture](html/images/hhmi_janelia_transparentbkgrnd.png)](http://www.janelia.org)
 
 [Scientific Computing](http://www.janelia.org/research-resources/computing-resources)  
 [Janelia Farm Research Campus](http://www.janelia.org)  
