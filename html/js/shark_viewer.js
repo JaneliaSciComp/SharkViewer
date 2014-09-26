@@ -790,13 +790,14 @@ function annotation_parser(txt) {
 		if (match) {
 			ann_json.push(
 				{
-					'x'      : parseFloat(match[0]),
-					'y'      : parseFloat(match[1]),
-					'z'      : parseFloat(match[2]),
+					'x'      : parseFloat(match[1]),
+					'y'      : parseFloat(match[2]),
+					'z'      : parseFloat(match[3]),
 				}
 			);
 		}
 	});
+	console.log(ann_json);
 	return ann_json;
 }
 
