@@ -3,6 +3,8 @@
 ![Picture](https://zenodo.org/badge/doi/10.5281/zenodo.10053.png)
 
 ##NEW
+09-26-2014 - Synapse Annotations. Load annotations from a separate file with format "x y z\n" for each annotation. You can use annotation\_parser(annotation\_text) to parse it into the format [{'x': x, 'y': y, 'z':z}, {'x': x1, 'y': y1, 'z':z1}, ..., {'x': xn, 'y': yn, 'z':zn}] and load that into the annotation property of SharkViewer.
+
 08-08-2014 - Three.js loader version: html/js/sharkviewer_loader.js
 If you want to use the neuron rendered from SharkViewer in another scene use this version. html/Shark\_Viewer\_Loader\_Version.html shows an example of how to use it.
 
@@ -105,6 +107,15 @@ Example:
 ```
 [{"label":"undefined","type":0},{"label":"soma","type":1}]
 ```
+annotation - array of javascript objects with x, y, z coordinates to display as synapse annotations.
+*Default*: false
+Example:
+```
+[{'x': x, 'y': y, 'z':z}, {'x': x1, 'y': y1, 'z':z1}, ..., {'x': xn, 'y': yn, 'z':zn}]
+```
+annotation_color - color to display annotations
+*Default* 0x111111
+
 
 ##Author Information
 SharkViewer was written by Charlotte Weaver (<weaverc10@janelia.hhmi.org>) and Christopher Bruns (<brunsc@janelia.hhmi.org>)
