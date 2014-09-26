@@ -10,14 +10,15 @@ THREE.SWCLoader.prototype = {
 	//   mode - 'skeleton', 'sphere', or 'particle' mode for rendering
 	//   fov - feild of view for camera to render neuron (needed for particle mode)
 	//   canvas_height - height of canvas (needed for particle mode)
+	//   device_pixel_ratio - from three.js renderer: renderer.devicePixelRatio 
 	//   load_fcn - callback function when swc loads, should accept 1 parameter, the neuron to render
-	load: function(url, mode, fov, canvas_height, load_fcn) {
+	load: function(url, mode, fov, canvas_height, device_pixel_ratio, load_fcn) {
 		var scope = this;
 		var loader = new THREE.XHRLoader( scope.manager );
 		loader.setCrossOrigin( scope.crossOrigin );
 		loader.load( url, function ( text ) {
 			var json = scope.parseSWC( text );
-			scope.createModel( json, mode, fov, canvas_height, load_fcn );
+			scope.createModel( json, mode, fov, canvas_height, device_pixel_ratio, load_fcn );
 		} );
 	},
 
@@ -56,7 +57,7 @@ THREE.SWCLoader.prototype = {
 		return swc_json;
 	},
 	
-	createModel: function(json, mode, fov, canvas_height, callback) {
+	createModel: function(json, mode, fov, canvas_height, device_pixel_ratio, callback) {
 		var swc = json; 
 		//which node to center neuron on (starts at 1), -1 to center at center of bounding box
 		var center_node = 1; 
@@ -363,7 +364,7 @@ THREE.SWCLoader.prototype = {
 				// properties that may vary from particle to particle. only accessible in vertex shaders!
 				//	(can pass color info to fragment shader via vColor.)
 				// compute scale for particles, in pixels
-				var particleScale =  0.5 * canvas_height / Math.tan(0.5 * fov * Math.PI / 180.0);
+				var particleScale =  (0.5 * canvas_height * device_pixel_ratio) / Math.tan(0.5 * fov * Math.PI / 180.0);
 			
 				var customAttributes = 
 				{

@@ -432,7 +432,8 @@ SharkViewer.prototype.init = function () {
 	this.renderer = new THREE.WebGLRenderer({
 		antialias : true,	// to get smoother output
 	});
-	this.renderer.setClearColorHex(0xffffff, 1);
+	this.renderer.setClearColor(0xffffff, 1);
+	//this.renderer.setSize(100 , 150);
 	this.renderer.setSize(this.WIDTH , this.HEIGHT);
 	document.getElementById(this.dom_element).appendChild(this.renderer.domElement);
 	var gl = this.renderer.context
@@ -495,7 +496,7 @@ SharkViewer.prototype.init = function () {
 		});
 
 
-		var particles = new THREE.ParticleSystem(this.geometry, this.material);
+		var particles = new THREE.PointCloud(this.geometry, this.material);
 		particles.sortParticles = false;
 		this.neuron.add(particles);
 
