@@ -143,8 +143,8 @@ THREE.SWCLoader.prototype = {
 		function generateSkeleton(node, node_parent) {
 			var vertex = new THREE.Vector3(node.x, node.y, node.z);
 			var vertex_parent = new THREE.Vector3(node_parent.x, node_parent.y, node_parent.z);
-			var child_color = this.nodeColor(node);
-			var parent_color = this.nodeColor(node_parent);
+			var child_color = nodeColor(node);
+			var parent_color = nodeColor(node_parent);
 			return {
 				'child' : vertex, 
 				'parent' : vertex_parent,
@@ -180,8 +180,7 @@ THREE.SWCLoader.prototype = {
 			
 		//calculates color based on node type
 		function nodeColor(node) {
-			if (node.type < three_colors.length) return three_colors[ node.type ];
-			return three_colors[0];
+			return three_colors[ node.type % three_colors.length];
 		};
 		//Sets up three.js scene 
 		function init() {
