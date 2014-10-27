@@ -143,9 +143,13 @@ THREE.SWCLoader.prototype = {
 		function generateSkeleton(node, node_parent) {
 			var vertex = new THREE.Vector3(node.x, node.y, node.z);
 			var vertex_parent = new THREE.Vector3(node_parent.x, node_parent.y, node_parent.z);
+			var child_color = this.nodeColor(node);
+			var parent_color = this.nodeColor(node_parent);
 			return {
 				'child' : vertex, 
-				'parent' : vertex_parent
+				'parent' : vertex_parent,
+				'child_color' : child_color,
+				'parent_color' : parent_color
 			};
 		};
 
@@ -481,15 +485,16 @@ THREE.SWCLoader.prototype = {
 			}
 			
 			if (mode === 'skeleton' || show_cones === false) {
-				material = new THREE.LineBasicMaterial({ color: colors[colors.length-1] });
-				if (mode === 'skeleton') material.color.set(colors[0]);
+				material = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors  });
 				geometry = new THREE.Geometry();
 				for (var node in swc) {
 					if (swc.hasOwnProperty(node)) {
 						if (swc[node].parent != -1) {
 							var verticies = generateSkeleton(swc[node], swc[swc[node].parent]);
 							geometry.vertices.push(verticies.child);
+							geometry.colors.push(verticies.child_color);
 							geometry.vertices.push(verticies.parent);
+							geometry.colors.push(verticies.parent_color);
 						}
 					}
 				} 

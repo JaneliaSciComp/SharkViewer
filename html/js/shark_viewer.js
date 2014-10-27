@@ -165,9 +165,13 @@ SharkViewer.prototype.createMetadataElement = function(metadata, colors) {
 SharkViewer.prototype.generateSkeleton = function (node, node_parent) {
 	var vertex = new THREE.Vector3(node.x, node.y, node.z);
 	var vertex_parent = new THREE.Vector3(node_parent.x, node_parent.y, node_parent.z);
+	var child_color = this.nodeColor(node);
+	var parent_color = this.nodeColor(node_parent);
 	return {
 		'child' : vertex, 
-		'parent' : vertex_parent
+		'parent' : vertex_parent,
+		'child_color' : child_color,
+		'parent_color' : parent_color
 	};
 };
 
@@ -222,8 +226,7 @@ SharkViewer.prototype.avgRadii = function () {
 
 //calculates color based on node type
 SharkViewer.prototype.nodeColor = function (node) {
-	if (node.type < this.three_colors.length) return this.three_colors[ node.type ];
-	return this.three_colors[0];
+	return this.three_colors[ node.type % this.three_colors.length];
 };
 
 SharkViewer.prototype.calculateParticleSize = function(fov) {
@@ -612,15 +615,16 @@ SharkViewer.prototype.init = function () {
 	}
 	
 	if (this.mode === 'skeleton' || this.show_cones === false) {
-		this.material = new THREE.LineBasicMaterial({ color: this.colors[this.colors.length-1] });
-		if (this.mode === 'skeleton') this.material.color.set(this.colors[0]);
+		this.material = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors  });
 		this.geometry = new THREE.Geometry();
 		for (var node in this.swc) {
 			if (this.swc.hasOwnProperty(node)) {
 				if (this.swc[node].parent != -1) {
 					var verticies = this.generateSkeleton(this.swc[node], this.swc[this.swc[node].parent]);
 					this.geometry.vertices.push(verticies.child);
+					this.geometry.colors.push(verticies.child_color);
 					this.geometry.vertices.push(verticies.parent);
+					this.geometry.colors.push(verticies.parent_color);
 				}
 			}
 		} 
