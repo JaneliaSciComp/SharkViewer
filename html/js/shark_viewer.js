@@ -150,7 +150,7 @@ SharkViewer.prototype.createMetadataElement = function(metadata, colors) {
 	var toinnerhtml = "";
 	metadata.forEach( function(m){
 		var mtype = parseInt(m.type);
-		var three_color = (mtype < colors.length) ? colors[mtype]: colors[0];
+		var three_color = colors[mtype % colors.length];
 		var css_color = three_color;
 		if ( typeof three_color != 'string') css_color = convertToHexColor(three_color);
 		console.log(three_color);
