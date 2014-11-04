@@ -57,7 +57,7 @@
 		}
 		var L = new THREE.SWCLoader;
 		//SWCLoader.load(filename, [mode : sphere, particle, or skeleton], onLoadCallback)
-		L.load('swc/test.swc', 'particle', fov, window.innerHeight, renderer.devicePixelRatio, function(data) {
+		L.load('swc/test.swc', 'skeleton', fov, window.innerHeight, renderer.devicePixelRatio, function(data) {
 			scene.add(data);
 			render();
 		});
