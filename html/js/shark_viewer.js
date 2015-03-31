@@ -746,8 +746,11 @@ SharkViewer.prototype.setValues = function (values) {
 
 //Helper function to turn swc file data into json object
 function swc_parser(swc_file) {
+    // Handle lines that end with /r/n instead of /n
+    // Fixed by Werner Van Geit @ BBP
+    var swc_ar = swc_file.replace(/\r\n/g, "\n");
 	//split by lines
-	var swc_ar = swc_file.split("\n");
+	var swc_ar = swc_ar.split("\n");
 	var swc_json = {};
 
 	var float = '-?\\d*(?:\\.\\d+)?';
@@ -776,7 +779,6 @@ function swc_parser(swc_file) {
 		}
 	});
 
-	//return json
 	return swc_json;
 }
 //Helper function to turn annotation file data into array
