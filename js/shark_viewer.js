@@ -578,7 +578,7 @@ function swc_parser(swc_file) {
 		float,    // z
 		float,    // radius
 		'-1|\\d+' // parent
-	].join(')[ \\t]+(') + ')[ \\t]*$');
+	].join(')[ \\t]+(') + ')[ \\t]*$','m');
 
 	swc_ar.forEach(function (e) {
 		//if line is good, put into json
