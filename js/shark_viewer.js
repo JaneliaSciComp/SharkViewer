@@ -321,7 +321,7 @@ SharkViewer.prototype.init = function () {
 	this.renderer = new THREE.WebGLRenderer({
 		antialias : true,	// to get smoother output
 	});
-	this.renderer.setClearColorHex(0xffffff, 1);
+	this.renderer.setClearColor(0xffffff, 1);
 	this.renderer.setSize(this.WIDTH , this.HEIGHT);
 	document.getElementById(this.dom_element).appendChild(this.renderer.domElement);
 
@@ -331,6 +331,7 @@ SharkViewer.prototype.init = function () {
 	// put a camera in the scene
 	var fov = 45;
 	var cameraPosition = this.calculateCameraPosition(fov);
+	cameraPosition = -10000;
 	this.camera = new THREE.PerspectiveCamera(fov, this.WIDTH/this.HEIGHT, 1, cameraPosition * 5);
 	this.scene.add(this.camera);
 	this.camera.position.z = cameraPosition;
@@ -490,13 +491,39 @@ SharkViewer.prototype.init = function () {
 	}
 	
 	//centers neuron
-	this.neuron.position.set(-this.center[0], -this.center[1], -this.center[2]);
+	// this.neuron.position.set(-this.center[0], -this.center[1], -this.center[2]);
 	this.scene.add(this.neuron);
+
+
+	var loader = new THREE.OBJLoader();
+	var that = this;
+	var bboxes = [];
+	loader.load( '../obj/BS_343.obj', function ( object ) {
+		object.traverse( function ( child ) {
+			child.material = new THREE.MeshBasicMaterial({ color: that.colors[1] , transparent: true, opacity: 0.45, depthTest: true, depthWrite:true});
+		} );
+		that.scene.add( object );
+		var bbox = new THREE.Box3().setFromObject(object);
+		bboxes.push(bbox);
+	});
+	loader.load( '../obj/CTX_688.obj', function ( object ) {
+		object.traverse( function ( child ) {
+			child.material = new THREE.MeshBasicMaterial({ color: that.colors[2],  transparent: true, opacity: 0.45, depthTest: true, depthWrite:true });
+		} );
+		that.scene.add( object );
+		var bbox = new THREE.Box3().setFromObject(object);
+		bboxes.push(bbox);
+	});
+	console.log(bboxes);
+
 
 	//Lights
 	//doesn't actually work with any of the current shaders
 	var light = new THREE.DirectionalLight( 0xffffff);
 	light.position.set(0, 0, 1000);
+	this.scene.add(light);
+	var light = new THREE.DirectionalLight( 0xffffff);
+	light.position.set(0, 0, -1000);
 	this.scene.add(light);
 	
 	if (this.show_stats) {
