@@ -467,7 +467,7 @@ SharkViewer.prototype.init = function () {
 	this.renderer = new THREE.WebGLRenderer({
 		antialias : true,	// to get smoother output
 	});
-	this.renderer.setClearColor(0x000000, 1);
+	this.renderer.setClearColor(0xffffff, 1);
 	this.renderer.setSize(this.WIDTH , this.HEIGHT);
 	document.getElementById(this.dom_element).appendChild(this.renderer.domElement);
 
@@ -574,9 +574,9 @@ SharkViewer.prototype.setValues = function (values) {
 SharkViewer.prototype.loadAllen = function(filename, color) {
 	var loader = new THREE.OBJLoader();
 	var that = this;
-	loader.load( "allen/obj/" + filename, function ( object ) {
+	loader.load( "allen_horta/obj/" + filename, function ( object ) {
 		object.traverse( function ( child ) {
-			child.material = new THREE.MeshBasicMaterial({ color: new THREE.Color('#' + color) , transparent: true, opacity: 0.45, depthTest: true, depthWrite:true});
+			child.material = new THREE.MeshBasicMaterial({ color: new THREE.Color('#' + color) , transparent: true, opacity: 0.30, depthTest: true, depthWrite:true});
 		} );
 		object.name = filename;
 		console.log(that.centerpoint);
@@ -666,9 +666,9 @@ function swc_parser(swc_file) {
 		if (match) {
 			swc_json[match[1]] = {
 				'type'   : parseInt  (match[2]),
-				'z'      : parseFloat(match[3]),
+				'x'      : parseFloat(match[3]),
 				'y'      : parseFloat(match[4]),
-				'x'      : parseFloat(match[5]),
+				'z'      : parseFloat(match[5]),
 				'radius' : parseFloat(match[6]),
 				'parent' : parseInt  (match[7]),
 			};
