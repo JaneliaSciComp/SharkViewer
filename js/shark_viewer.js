@@ -43,6 +43,7 @@ var SharkViewer = function (parameters) {
 	this.metadata = false;
 	this.centerpoint = null;
 	this.brainboundingbox = null;
+    this.allen_path = "allen_horta/obj/";
 	this.setValues(parameters);
 };
 
@@ -574,7 +575,7 @@ SharkViewer.prototype.setValues = function (values) {
 SharkViewer.prototype.loadAllen = function(filename, color) {
 	var loader = new THREE.OBJLoader();
 	var that = this;
-	loader.load( "allen_horta/obj/" + filename, function ( object ) {
+	loader.load( this.allen_path + filename, function ( object ) {
 		object.traverse( function ( child ) {
 			child.material = new THREE.MeshBasicMaterial({ color: new THREE.Color('#' + color) , transparent: true, opacity: 0.30, depthTest: true, depthWrite:true});
 		} );
