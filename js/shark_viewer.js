@@ -576,7 +576,43 @@ SharkViewer.prototype.loadAllen = function(filename, color) {
 	var that = this;
 	loader.load( "allen_horta/obj/" + filename, function ( object ) {
 		object.traverse( function ( child ) {
-			child.material = new THREE.MeshBasicMaterial({ color: new THREE.Color('#' + color) , transparent: true, opacity: 0.30, depthTest: true, depthWrite:true});
+			child.material = new THREE.ShaderMaterial({
+				uniforms: {
+					color: { type: 'c', value: new THREE.Color( '#' + color ) },
+				},
+				vertexShader: `
+					#line 585
+					varying vec3 normal_in_camera;
+					varying vec3 view_direction;
+
+					void main() {
+						vec4 pos_in_camera = modelViewMatrix * vec4(position, 1.0);
+						gl_Position = projectionMatrix * pos_in_camera;
+						normal_in_camera = normalize(mat3(modelViewMatrix) * normal);
+						view_direction = normalize(pos_in_camera.xyz);
+					}
+				`,
+                fragmentShader: `
+                	#line 597
+                	uniform vec3 color;
+					varying vec3 normal_in_camera;
+					varying vec3 view_direction;
+
+					void main() {
+						// Make edges more opaque than center
+						float edginess = 1.0 - abs(dot(normal_in_camera, view_direction));
+						float opacity = clamp(edginess - 0.30, 0.0, 0.5);
+						// Darken compartment at the very edge
+						float blackness = pow(edginess, 4.0) - 0.3;
+						vec3 c = mix(color, vec3(0,0,0), blackness);
+						gl_FragColor = vec4(c, opacity);
+					}
+				`,
+				transparent: true,
+				depthTest: true,
+				depthWrite: false,
+				side: THREE.DoubleSide,
+                });
 		} );
 		object.name = filename;
 		console.log(that.centerpoint);
