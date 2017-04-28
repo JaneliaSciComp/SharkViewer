@@ -629,14 +629,17 @@ SharkViewer.prototype.unloadAllen = function(filename) {
 	this.scene.remove(selectedObj);
 };
 
-SharkViewer.prototype.loadNeuron = function(filename, color) {
-	var	swc_loaded = swc_parser(filename);
-	var neuron = this.createNeuron(swc_loaded);
-	neuron.name = filename;
-	this.scene.add(neuron);
+SharkViewer.prototype.loadNeuronNodes = function(filename, color, nodes) {
+    var neuron = this.createNeuron(nodes);
+    neuron.name = filename;
+    this.scene.add(neuron);
     if (this.centerpoint !== null) {
         neuron.position.set(-this.centerpoint[0], -this.centerpoint[1], -this.centerpoint[2]);
     }
+};
+
+SharkViewer.prototype.loadNeuron = function(filename, color) {
+    this.loadNeuronNodes(filename, color, swc_parser(filename));
 };
 
 SharkViewer.prototype.unloadNeuron = function(filename){
