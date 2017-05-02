@@ -12904,25 +12904,7 @@ disabled: false
 	  ga('send', 'pageview');
 
 	</script> -->
-<script id="swc" type='text/plain'>
-# ORIGINAL_SOURCE NeuronStudio 0.8.80
-# CREATURE
-# REGION
-# FIELD/LAYER
-# TYPE
-# CONTRIBUTOR
-# REFERENCE
-# RAW
-# EXTRAS
-# SOMA_AREA
-# SHINKAGE_CORRECTION 1.0 1.0 1.0
-# VERSION_NUMBER 1.0
-# VERSION_DATE 2007-07-24
-# SCALE 1.0 1.0 1.0
-1 1 100 100 100 0.717830 -1
-2 0 101 100 100 0.463378 1
 
-</script>
 <script id='metadata_swc' type='text/plain'>
 [{"label":"undefined","type":0},{"label":"soma","type":1},{"label":"axon","type":2},{"label":"dendrite","type":3},{"label":"apical dendrite","type":4},{"label":"fork point","type":5},{"label":"end point","type":6},{"label":"custom","type":7}]
 </script>
@@ -12979,14 +12961,11 @@ disabled: false
 
     window.onload = function() {
 		document.getElementById('swc_input').addEventListener('change', readSwcFile, false);
-		var swc = swc_parser(document.getElementById("swc").text);
 		mdata = JSON.parse(document.getElementById("metadata_swc").text);
 		s = new SharkViewer({
-			swc: swc, 
-			dom_element: 'container', 
+			dom_element: 'container',
 			center_node: -1, 
 			show_stats: false,
-			metadata: mdata,
             WIDTH: 600,
         	HEIGHT: 600,
             centerpoint: [6688, 3849, 5687],
@@ -12994,7 +12973,8 @@ disabled: false
 		});
 		s.init();
 		s.animate();
-		$('#allen_mouse').jstree(
+		const allen_mouse = $('#allen_mouse');
+		allen_mouse.jstree(
 			{
 				ui: {
 					theme_name: "checkbox"
@@ -13010,13 +12990,11 @@ disabled: false
 				},
 				plugins: [ "checkbox"]
 			}
-		); 
-		$("#allen_mouse").on("select_node.jstree", function(e, d){
+		).on("select_node.jstree", function(e, d){
 			let filename = d.node.original.filename;
 			let color = d.node.original.color;
 			s.loadAllen(filename, color);
-		});
-		$("#allen_mouse").on("deselect_node.jstree", function(e, d){
+		}).on("deselect_node.jstree", function(e, d){
 			let filename = d.node.original.filename;
 			s.unloadAllen(filename);
 		});
