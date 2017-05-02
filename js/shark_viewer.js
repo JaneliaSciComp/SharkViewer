@@ -147,17 +147,25 @@ SharkViewer.prototype.generateSkeleton = function (node, node_parent) {
 };
 
 //generates cone properties for node, parent pair
-SharkViewer.prototype.generateCone = function (node, node_parent) {
+SharkViewer.prototype.generateCone = function (node, node_parent, color) {
 	var cone_child = {};
 	var cone_parent = {};
-	
+
+	let node_color = this.nodeColor(node);
+	if (color) {
+		node_color = new THREE.Color(color);
+	}
 	cone_child.vertex = new THREE.Vector3(node.x, node.y, node.z);
 	cone_child.radius = node.radius;
-	cone_child.color = this.nodeColor(node);
-	
+	cone_child.color = node_color;
+
+	node_parent_color = this.nodeColor(node_parent);
+	if (color) {
+		node_parent_color = new THREE.Color(color);
+	}
 	cone_parent.vertex = new THREE.Vector3(node_parent.x, node_parent.y, node_parent.z);
 	cone_parent.radius = node_parent.radius;
-	cone_parent.color = this.nodeColor(node_parent);
+	cone_parent.color = node_parent_color;
 
 	//normals
 	var n1 = new THREE.Vector3().subVectors(cone_parent.vertex, cone_child.vertex);
@@ -189,7 +197,7 @@ SharkViewer.prototype.nodeColor = function (node) {
 	return this.three_colors[0];
 };
 
-SharkViewer.prototype.createNeuron = function(swc_json) {
+SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
 
 
     //neuron is object 3d which ensures all components move together
@@ -197,8 +205,6 @@ SharkViewer.prototype.createNeuron = function(swc_json) {
 	var geometry, material;
     //particle mode uses vertex info to place texture image, very fast
     if (this.mode === 'particle') {
-
-        //material = new THREE.ParticleSystemMaterial({color: 0x0080ff});
         // special imposter image contains:
         // 1 - colorizable sphere image in red channel
         // 2 - specular highlight in green channel
@@ -229,10 +235,14 @@ SharkViewer.prototype.createNeuron = function(swc_json) {
 
         for (var node in swc_json) {
             if (swc_json.hasOwnProperty(node)) {
-                var particle_vertex = this.generateParticle(swc_json[node]);
+            	let node_color = this.nodeColor(swc_json[node]);
+            	if (color) {
+            		node_color = new THREE.Color(color);
+				}
+                let particle_vertex = this.generateParticle(swc_json[node]);
                 geometry.vertices.push(particle_vertex);
                 customAttributes.radius.value.push(swc_json[node].radius);
-                customAttributes.typeColor.value.push(this.nodeColor(swc_json[node]));
+                customAttributes.typeColor.value.push(node_color);
             }
         }
         material = new THREE.ShaderMaterial(
@@ -274,15 +284,25 @@ SharkViewer.prototype.createNeuron = function(swc_json) {
             for (var node in swc_json) {
                 if (swc_json.hasOwnProperty(node)) {
                     if (swc_json[node].parent !== -1) {
+
                         // Child/first position
-                        var cone = this.generateCone(swc_json[node], swc_json[swc_json[node].parent]);
+                        var cone = this.generateCone(swc_json[node], swc_json[swc_json[node].parent], color);
+                        let node_color = cone.child.color;
+						if (color) {
+							node_color = new THREE.Color(color);
+							console.log(node_color);
+						}
+						console.log(node_color);
                         var ix2 = coneGeom.vertices.push(cone.child.vertex);
                         coneAttributes.radius.value.push(cone.child.radius);
-                        coneAttributes.typeColor.value.push(cone.child.color);
-
+                        coneAttributes.typeColor.value.push(node_color);
+						node_color = cone.parent.color;
+						if (color) {
+							node_color = new THREE.Color(color);
+						}
                         coneGeom.vertices.push(cone.parent.vertex);
                         coneAttributes.radius.value.push(cone.parent.radius);
-                        coneAttributes.typeColor.value.push(cone.parent.color);
+                        coneAttributes.typeColor.value.push(node_color);
 
                         // Paint two triangles to make a cone-imposter quadrilateral
                         // Triangle #1
@@ -574,6 +594,7 @@ SharkViewer.prototype.setValues = function (values) {
 
 SharkViewer.prototype.loadAllen = function(filename, color) {
 	var loader = new THREE.OBJLoader();
+	
 	var that = this;
 	loader.load( this.allen_path + filename, function ( object ) {
 		object.traverse( function ( child ) {
@@ -616,7 +637,6 @@ SharkViewer.prototype.loadAllen = function(filename, color) {
                 });
 		} );
 		object.name = filename;
-		console.log(that.centerpoint);
 		if (that.centerpoint !== null) {
             object.position.set(-that.centerpoint[0], -that.centerpoint[1], -that.centerpoint[2]);
         }
@@ -631,7 +651,7 @@ SharkViewer.prototype.unloadAllen = function(filename) {
 };
 
 SharkViewer.prototype.loadNeuronNodes = function(filename, color, nodes) {
-    var neuron = this.createNeuron(nodes);
+    var neuron = this.createNeuron(nodes, color);
     neuron.name = filename;
     this.scene.add(neuron);
     if (this.centerpoint !== null) {
@@ -639,7 +659,8 @@ SharkViewer.prototype.loadNeuronNodes = function(filename, color, nodes) {
     }
 };
 
-SharkViewer.prototype.loadNeuron = function(filename, color) {
+SharkViewer.prototype.loadNeuron = function(filename, color=null) {
+	console.log(color);
     this.loadNeuronNodes(filename, color, swc_parser(filename));
 };
 

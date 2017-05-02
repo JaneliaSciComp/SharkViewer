@@ -12940,15 +12940,36 @@ disabled: false
 
 	<script type='text/javascript'>
 	var mdata;
+	var colors = [
+		0xFF5252,
+		0x7C4DFF,
+		0x40C4FF,
+		0x69F0AE,
+		0xFFFF00,
+		0xFF6E40,
+		0xFF4081,
+		0x536DFE,
+		0x18FFFF,
+		0xB2FF59,
+		0xFFD740,
+		0xE040FB,
+		0x448AFF,
+		0x64FFDA,
+		0xEEFF41,
+		0xFFAB40,
+	];
+	var count = 0;
 	function readSwcFile(e) {
 		var f = e.target.files[0]; 
 		console.log(f);
 		if (f) {
 			var r = new FileReader();
-			r.onload = function(e2) { 
-
-					s.loadNeuron(e2.target.result);
-
+			r.onload = function(e2) {
+				var color_idx = count % colors.length;
+				console.log(color_idx);
+				console.log(colors[color_idx]);
+				s.loadNeuron(e2.target.result, colors[color_idx]);
+				count++;
 			}
 			r.readAsText(f);
 		} else { 

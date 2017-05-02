@@ -152,7 +152,7 @@ SharkViewer.prototype.createMetadataElement = function(metadata, colors) {
 		var mtype = parseInt(m.type);
 		var three_color = colors[mtype % colors.length];
 		var css_color = three_color;
-		if ( typeof three_color != 'string') css_color = convertToHexColor(three_color);
+		if ( typeof three_color !== 'string') css_color = convertToHexColor(three_color);
 		console.log(three_color);
 		toinnerhtml += "<div><span style='height:10px;width:10px;background:" + css_color +
 					";display:inline-block;'></span> : " + m.label +"</div>";
@@ -222,7 +222,7 @@ SharkViewer.prototype.avgRadii = function () {
 		}
 	}
 	return radii_sum / radii_count;
-}
+};
 
 //calculates color based on node type
 SharkViewer.prototype.nodeColor = function (node) {
@@ -231,7 +231,7 @@ SharkViewer.prototype.nodeColor = function (node) {
 
 SharkViewer.prototype.calculateParticleSize = function(fov) {
 		return (0.5 * this.HEIGHT * this.renderer.devicePixelRatio)/ Math.tan(0.5 * fov * Math.PI / 180.0);
-}
+};
 
 //Sets up three.js scene 
 SharkViewer.prototype.init = function () {
@@ -750,7 +750,7 @@ function swc_parser(swc_file) {
     // Fixed by Werner Van Geit @ BBP
     var swc_ar = swc_file.replace(/\r\n/g, "\n");
 	//split by lines
-	var swc_ar = swc_ar.split("\n");
+	swc_ar = swc_ar.split("\n");
 	var swc_json = {};
 
 	var float = '-?\\d*(?:\\.\\d+)?';
