@@ -128,7 +128,6 @@ SharkViewer.prototype.createMetadataElement = function(metadata, colors) {
 		var three_color = (mtype < colors.length) ? colors[mtype]: colors[0];
 		var css_color = three_color;
         if ( typeof three_color != 'string') css_color = convertToHexColor(three_color);
-        console.log(three_color);
 		toinnerhtml += "<div><span style='height:10px;width:10px;background:" + css_color +
 					";display:inline-block;'></span> : " + m.label +"</div>";
 	});
@@ -290,9 +289,7 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
                         let node_color = cone.child.color;
 						if (color) {
 							node_color = new THREE.Color(color);
-							console.log(node_color);
 						}
-						console.log(node_color);
                         var ix2 = coneGeom.vertices.push(cone.child.vertex);
                         coneAttributes.radius.value.push(cone.child.radius);
                         coneAttributes.typeColor.value.push(node_color);
@@ -660,7 +657,6 @@ SharkViewer.prototype.loadNeuronNodes = function(filename, color, nodes) {
 };
 
 SharkViewer.prototype.loadNeuron = function(filename, color=null) {
-	console.log(color);
     this.loadNeuronNodes(filename, color, swc_parser(filename));
 };
 
