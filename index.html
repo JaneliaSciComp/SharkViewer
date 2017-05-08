@@ -10,15 +10,10 @@
 		<script src="js/threejs/OBJLoader.js"></script>
 		<script src="js/threejs/TrackballControls.js"></script>
 		<script src="./js/shark_viewer.js"></script>
-		<!-- optional only if show_stats = true -->
-		<script src="js/threejs/Stats.js"></script>
-		<!-- optional only if effect='rift' -->
-		<script src="js/threejs/OculusRiftEffect.js"></script>
-		<!-- optional only if effect='parallax' -->
-		<script src="js/threejs/ParallaxBarrierEffect.js"></script>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
 		<script src="js/jstree.js"></script>
+		<script src="js/custom-event-polyfill.js"></script>
 
 <script type='text/javascript'>
 	const data = [
@@ -12915,6 +12910,8 @@ disabled: false
 <body>
 		<label for='swc_input'>Upload a swc file to view it in the SharkViewer:</label><input type='file' name='swc_input' id='swc_input' />
 		<div id="allen_mouse"></div>
+		<div id="neurons"></div>
+		<div id="compartments"></div>
 	<!-- three.js container -->
     	<div id="container" style='position:relative'></div>
 	<!-- info on screen display -->
@@ -12922,6 +12919,7 @@ disabled: false
 
 	<script type='text/javascript'>
 	var mdata;
+	// Using material design A200 set
 	var colors = [
 		0xFF5252,
 		0x7C4DFF,
@@ -12948,9 +12946,8 @@ disabled: false
 			var r = new FileReader();
 			r.onload = function(e2) {
 				var color_idx = count % colors.length;
-				console.log(color_idx);
-				console.log(colors[color_idx]);
-				s.loadNeuron(e2.target.result, colors[color_idx]);
+				console.log(f.name)     ;
+				s.loadNeuron(e2.target.result, colors[color_idx], f.name);
 				count++;
 			}
 			r.readAsText(f);
@@ -12997,6 +12994,15 @@ disabled: false
 		}).on("deselect_node.jstree", function(e, d){
 			let filename = d.node.original.filename;
 			s.unloadAllen(filename);
+		});
+		s.renderer.domElement.addEventListener('neuronloaded', function(e) {
+			$('#neurons').html(s.createNeuronElement());
+		});
+		s.renderer.domElement.addEventListener('compartmentloaded', function(e) {
+			$('#compartments').html(s.createCompartmentElement());
+		});
+		s.renderer.domElement.addEventListener('compartmentunloaded', function(e) {
+			$('#compartments').html(s.createCompartmentElement());
 		});
 	}
 	</script>

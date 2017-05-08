@@ -104,16 +104,6 @@ SharkViewer.prototype.generateParticle = function (node) {
 };
 
 SharkViewer.prototype.createMetadataElement = function(metadata, colors) {
-	function convertToHexColor(i) {
-		var result = "#000000";
-		if      (i >= 0    && i <= 15)          { result = "#00000" + i.toString(16); }
-		else if (i >= 16   && i <= 255)         { result = "#0000"  + i.toString(16); }
-		else if (i >= 256  && i <= 4095)        { result = "#000"   + i.toString(16); }
-		else if (i >= 4096 && i <= 65535)       { result = "#00"    + i.toString(16); }
-		else if (i >= 65536 && i <= 1048575)    { result = "#0"     + i.toString(16); }
-		else if (i >= 1048576 && i <= 16777215) { result = "#"      + i.toString(16); }
-		return result;
-	}
 	var metadiv = document.createElement('div');
 	metadiv.id='node_key';
 	metadiv.style.position = 'absolute';
@@ -127,12 +117,44 @@ SharkViewer.prototype.createMetadataElement = function(metadata, colors) {
 		var mtype = parseInt(m.type);
 		var three_color = (mtype < colors.length) ? colors[mtype]: colors[0];
 		var css_color = three_color;
-        if ( typeof three_color != 'string') css_color = convertToHexColor(three_color);
+        if ( typeof three_color !== 'string') css_color = convertToHexColor(three_color);
 		toinnerhtml += "<div><span style='height:10px;width:10px;background:" + css_color +
 					";display:inline-block;'></span> : " + m.label +"</div>";
 	});
     metadiv.innerHTML = toinnerhtml; 
 	return metadiv;
+};
+
+SharkViewer.prototype.createNeuronElement = function() {
+	let neurondiv = document.createElement('div');
+	neurondiv.id='neurons_element';
+	let toinnerhtml = "";
+	this.neurons.forEach( function(neuron){
+		let neuron_name = neuron.name;
+		let neuron_color = neuron.color;
+		let css_color = neuron_color;
+		if ( typeof neuron_color !== 'string') css_color = convertToHexColor(neuron_color);
+		toinnerhtml += "<div><span style='height:10px;width:10px;background:" + css_color +
+					";display:inline-block;'></span> : " + neuron_name +"</div>";
+	});
+	neurondiv.innerHTML = toinnerhtml;
+	return neurondiv;
+};
+SharkViewer.prototype.createCompartmentElement = function() {
+	let compartmentdiv = document.createElement('div');
+	compartmentdiv.id='compartments_element';
+	let toinnerhtml = "";
+	this.compartments.forEach( function(compartment){
+		let compartment_name = compartment.name;
+		let compartment_color = compartment.color;
+		let css_color = compartment_color;
+		console.log(css_color);
+		if ( typeof compartment_color !== 'string') css_color = convertToHexColor(compartment_color);
+		toinnerhtml += "<div><span style='height:10px;width:10px;background:#" + css_color +
+					";display:inline-block;'></span> : " + compartment_name +"</div>";
+	});
+	compartmentdiv.innerHTML = toinnerhtml;
+	return compartmentdiv;
 };
 
 //generates skeleton verticies
@@ -197,8 +219,6 @@ SharkViewer.prototype.nodeColor = function (node) {
 };
 
 SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
-
-
     //neuron is object 3d which ensures all components move together
     var neuron = new THREE.Object3D();
 	var geometry, material;
@@ -464,6 +484,10 @@ SharkViewer.prototype.init = function () {
 		'}',
 	].join("\n");
 
+    this.neurons = [];
+    this.compartments = [];
+
+
 	if (this.effect === 'noeffect') this.effect = false;
 	 
 	//set up colors and materials based on color array
@@ -588,11 +612,10 @@ SharkViewer.prototype.setValues = function (values) {
 		}
 	}
 };
-
 SharkViewer.prototype.loadAllen = function(filename, color) {
-	var loader = new THREE.OBJLoader();
-	
-	var that = this;
+	let loader = new THREE.OBJLoader();
+
+	const that = this;
 	loader.load( this.allen_path + filename, function ( object ) {
 		object.traverse( function ( child ) {
 			child.material = new THREE.ShaderMaterial({
@@ -634,15 +657,21 @@ SharkViewer.prototype.loadAllen = function(filename, color) {
                 });
 		} );
 		object.name = filename;
+		object.color = color;
+		that.compartments.push(object);
 		if (that.centerpoint !== null) {
             object.position.set(-that.centerpoint[0], -that.centerpoint[1], -that.centerpoint[2]);
         }
 		that.scene.add( object );
+		const compartment_loaded_event =  new CustomEvent('compartmentloaded', {'detail': {'name': filename}});
+	    that.renderer.domElement.dispatchEvent(compartment_loaded_event);
 
 	});
 };
 
 SharkViewer.prototype.unloadAllen = function(filename) {
+	const compartment_unloaded_event =  new CustomEvent('compartmentunloaded', {'detail': {'name': filename}});
+	this.renderer.domElement.dispatchEvent(compartment_unloaded_event);
 	var selectedObj = this.scene.getObjectByName(filename);
 	this.scene.remove(selectedObj);
 };
@@ -650,14 +679,19 @@ SharkViewer.prototype.unloadAllen = function(filename) {
 SharkViewer.prototype.loadNeuronNodes = function(filename, color, nodes) {
     var neuron = this.createNeuron(nodes, color);
     neuron.name = filename;
+    neuron.color = color;
+    const neuron_loaded_event =  new CustomEvent('neuronloaded', {'detail': {'name': filename}});
+    this.neurons.push(neuron);
     this.scene.add(neuron);
+    this.renderer.domElement.dispatchEvent(neuron_loaded_event);
     if (this.centerpoint !== null) {
         neuron.position.set(-this.centerpoint[0], -this.centerpoint[1], -this.centerpoint[2]);
     }
 };
 
-SharkViewer.prototype.loadNeuron = function(filename, color=null) {
-    this.loadNeuronNodes(filename, color, swc_parser(filename));
+SharkViewer.prototype.loadNeuron = function(filename, color=null, name="") {
+	console.log(name);
+    this.loadNeuronNodes(name, color, swc_parser(filename));
 };
 
 SharkViewer.prototype.unloadNeuron = function(filename){
@@ -699,6 +733,29 @@ SharkViewer.prototype.unloadNeuron = function(filename){
 //     return axes;
 //
 // }
+
+function convertToHexColor(i) {
+	let result = "#000000";
+	if (i >= 0 && i <= 15) {
+		result = "#00000" + i.toString(16);
+	}
+	else if (i >= 16 && i <= 255) {
+		result = "#0000" + i.toString(16);
+	}
+	else if (i >= 256 && i <= 4095) {
+		result = "#000" + i.toString(16);
+	}
+	else if (i >= 4096 && i <= 65535) {
+		result = "#00" + i.toString(16);
+	}
+	else if (i >= 65536 && i <= 1048575) {
+		result = "#0" + i.toString(16);
+	}
+	else if (i >= 1048576 && i <= 16777215) {
+		result = "#" + i.toString(16);
+	}
+	return result;
+}
 
 //Helper function to turn swc file data into json object
 function swc_parser(swc_file) {
