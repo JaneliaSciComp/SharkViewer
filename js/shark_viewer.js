@@ -20,7 +20,7 @@ var SharkViewer = function (parameters) {
 	//width of canvas
 	this.WIDTH = window.innerWidth; 
 	//which node to center neuron on (starts at 1), -1 to center at center of bounding box
-	this.center_node = 1;
+	this.center_node = -1;
 	//flip y axis
 	this.flip = true;
 	//shows fps stats if true
@@ -39,29 +39,46 @@ var SharkViewer = function (parameters) {
 		0xf8d43c,
 		0xfd2c4d,
 		0xc9c9c9,
-	]; 
+	];
+	this.min_radius = 0;
 	this.metadata = false;
 	this.centerpoint = null;
 	this.brainboundingbox = null;
-    this.allen_path = "allen_horta/obj/";
+    this.compartment_path = "";
+    this.camera_z = null;
 	this.setValues(parameters);
 };
 
 //calculates bounding box for neuron object
 SharkViewer.prototype.calculateBoundingBox = function (swc_json) {
-	var boundingBox;
-	for (var node in swc_json) {
-		if (swc_json.hasOwnProperty(node)) {
-			if (swc_json[node].x < boundingBox.xmin) boundingBox.xmin = swc_json[node].x;
-			if (swc_json[node].x > boundingBox.xmax) boundingBox.xmax = swc_json[node].x;
-			if (swc_json[node].y < boundingBox.ymin) boundingBox.ymin = swc_json[node].y;
-			if (swc_json[node].y > boundingBox.ymax) boundingBox.ymax = swc_json[node].y;
-			if (swc_json[node].z < boundingBox.zmin) boundingBox.zmin = swc_json[node].z;
-			if (swc_json[node].z > boundingBox.zmax) boundingBox.zmax = swc_json[node].z;
+	if (this.neurons.length >= 1) {
+		let boundingBox = {
+			xmin: Infinity,
+			xmax: -Infinity,
+			ymin: Infinity,
+			ymax: -Infinity,
+			zmin: Infinity,
+			zmax: -Infinity,
+		};
+		console.log("Neurons", this.neurons, this.neurons.length);
+		for (let i = 0;  i < this.neurons.length; i++) {
+				console.log("I", i);
+				let neuronbbox = new THREE.Box3().setFromObject(this.neurons[i]);
+				if (neuronbbox.min.x < boundingBox.xmin) boundingBox.xmin = neuronbbox.min.x;
+				if (neuronbbox.max.x > boundingBox.xmax) boundingBox.xmax = neuronbbox.max.x;
+				if (neuronbbox.min.y < boundingBox.ymin) boundingBox.ymin = neuronbbox.min.y;
+				if (neuronbbox.max.y > boundingBox.ymax) boundingBox.ymax = neuronbbox.max.y;
+				if (neuronbbox.min.z < boundingBox.zmin) boundingBox.zmin = neuronbbox.min.z;
+				if (neuronbbox.max.z > boundingBox.zmax) boundingBox.zmax = neuronbbox.max.z;
 		}
+		return boundingBox;
 	}
-	return boundingBox
 };
+
+SharkViewer.prototype.calculateNeuronCenter = function (bbox) {
+	return [(bbox.xmax - bbox.xmin) / 2 + bbox.xmin, (bbox.ymax - bbox.ymin) / 2 + bbox.ymin, (bbox.zmax - bbox.zmin) / 2 + bbox.zmin];
+};
+
 
 //generates sphere mesh
 SharkViewer.prototype.generateSphere = function (node) {
@@ -148,7 +165,6 @@ SharkViewer.prototype.createCompartmentElement = function() {
 		let compartment_name = compartment.name;
 		let compartment_color = compartment.color;
 		let css_color = compartment_color;
-		console.log(css_color);
 		if ( typeof compartment_color !== 'string') css_color = convertToHexColor(compartment_color);
 		toinnerhtml += "<div><span style='height:10px;width:10px;background:#" + css_color +
 					";display:inline-block;'></span> : " + compartment_name +"</div>";
@@ -219,6 +235,7 @@ SharkViewer.prototype.nodeColor = function (node) {
 };
 
 SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
+	console.log(swc_json);
     //neuron is object 3d which ensures all components move together
     var neuron = new THREE.Object3D();
 	var geometry, material;
@@ -260,23 +277,27 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
 				}
                 let particle_vertex = this.generateParticle(swc_json[node]);
                 geometry.vertices.push(particle_vertex);
-                customAttributes.radius.value.push(swc_json[node].radius);
+                let radius =  swc_json[node].radius;
+                if (this.min_radius && radius < this.min_radius) {
+                	radius = this.min_radius;
+				}
+                customAttributes.radius.value.push(radius);
                 customAttributes.typeColor.value.push(node_color);
             }
         }
-        material = new THREE.ShaderMaterial(
-            {
-                uniforms : customUniforms,
-                attributes : customAttributes,
-                vertexShader : this.vertexShader,
-                fragmentShader : this.fragementShader,
-                transparent : true,
-                alphaTest: 0.5,  // if having transparency issues, try including: alphaTest: 0.5,
-                depthTest : true,
-                // blending: THREE.AdditiveBlending, depthTest: false,
-                // I guess you don't need to do a depth test if you are alpha blending?
-                //
-            });
+        console.log(customAttributes);
+        material = new THREE.ShaderMaterial({
+			uniforms : customUniforms,
+			attributes : customAttributes,
+			vertexShader : this.vertexShader,
+			fragmentShader : this.fragementShader,
+			transparent : true,
+			alphaTest: 0.5,  // if having transparency issues, try including: alphaTest: 0.5,
+			depthTest : true,
+			// blending: THREE.AdditiveBlending, depthTest: false,
+			// I guess you don't need to do a depth test if you are alpha blending?
+			//
+		});
 
 
         var particles = new THREE.ParticleSystem(geometry, material);
@@ -311,14 +332,22 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
 							node_color = new THREE.Color(color);
 						}
                         var ix2 = coneGeom.vertices.push(cone.child.vertex);
-                        coneAttributes.radius.value.push(cone.child.radius);
+						let child_radius =   cone.child.radius;
+						if (this.min_radius && child_radius < this.min_radius) {
+							child_radius = this.min_radius;
+						}
+                        coneAttributes.radius.value.push(child_radius);
                         coneAttributes.typeColor.value.push(node_color);
 						node_color = cone.parent.color;
 						if (color) {
 							node_color = new THREE.Color(color);
 						}
                         coneGeom.vertices.push(cone.parent.vertex);
-                        coneAttributes.radius.value.push(cone.parent.radius);
+						let parent_radius =   cone.parent.radius;
+						if (this.min_radius && parent_radius < this.min_radius) {
+							parent_radius = this.min_radius;
+						}
+                        coneAttributes.radius.value.push(parent_radius);
                         coneAttributes.typeColor.value.push(node_color);
 
                         // Paint two triangles to make a cone-imposter quadrilateral
@@ -336,6 +365,8 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
                     }
                 }
             }
+            console.log("HERE I AM");
+            console.log(coneAttributes);
             var coneMaterial = new THREE.ShaderMaterial(
                 {
                     attributes: coneAttributes,
@@ -517,16 +548,29 @@ SharkViewer.prototype.init = function () {
 	this.scene = new THREE.Scene();
 
 	// put a camera in the scene
-	this.fov = 45;
-	//var cameraPosition = this.calculateCameraPosition(fov);
-	var cameraPosition = -20000;
-	this.camera = new THREE.PerspectiveCamera(this.fov, this.WIDTH/this.HEIGHT, 1, cameraPosition * 5);
+	fov = 45;
+	// get bounding box, center
+	//let cameraPosition = this.calculateCameraPosition(fov, this.center, boundingBox);
+	let cameraPosition = -10000;
+	if (this.camera_z) {
+		cameraPosition = this.camera_z;
+	}
+
+	// TODO actually write this part
+	else if (false){
+		let boundingBox = false;
+		cameraPosition = this.calculateCameraPosition(fov, this.center, boundingBox);
+	}
+
+	this.camera = new THREE.PerspectiveCamera(fov, this.WIDTH/this.HEIGHT, 1, Math.abs(cameraPosition) * 5);
 	this.scene.add(this.camera);
 
 	this.camera.position.z = cameraPosition;
 
-	// this.axes = buildAxes(10000);
-	// this.scene.add(this.axes);
+
+
+	this.axes = buildAxes(1000000);
+	this.scene.add(this.axes);
 
 
 	if (this.flip === true) {
@@ -535,10 +579,6 @@ SharkViewer.prototype.init = function () {
 
 	this.neuron = this.createNeuron(this.swc);
 	this.scene.add(this.neuron);
-
-
-
-
 
 	//Lights
 	//doesn't actually work with any of the current shaders
@@ -616,7 +656,7 @@ SharkViewer.prototype.loadAllen = function(filename, color) {
 	let loader = new THREE.OBJLoader();
 
 	const that = this;
-	loader.load( this.allen_path + filename, function ( object ) {
+	loader.load( this.compartment_path + filename, function ( object ) {
 		object.traverse( function ( child ) {
 			child.material = new THREE.ShaderMaterial({
 				uniforms: {
@@ -684,13 +724,18 @@ SharkViewer.prototype.loadNeuronNodes = function(filename, color, nodes) {
     this.neurons.push(neuron);
     this.scene.add(neuron);
     this.renderer.domElement.dispatchEvent(neuron_loaded_event);
+    let bbox = this.calculateBoundingBox();
+    this.center = this.calculateNeuronCenter(bbox);
     if (this.centerpoint !== null) {
         neuron.position.set(-this.centerpoint[0], -this.centerpoint[1], -this.centerpoint[2]);
     }
+    else {
+    	neuron.position.set(-this.center[0], -this.center[1], -this.center[2]);
+    	console.log(this.center);
+	}
 };
 
 SharkViewer.prototype.loadNeuron = function(filename, color=null, name="") {
-	console.log(name);
     this.loadNeuronNodes(name, color, swc_parser(filename));
 };
 
@@ -699,40 +744,40 @@ SharkViewer.prototype.unloadNeuron = function(filename){
 	this.scene.remove(neuron);
 };
 
-// function buildAxis( src, dst, colorHex, dashed ) {
-//     var geom = new THREE.Geometry(),
-//         mat;
-//
-//     if(dashed) {
-//         mat = new THREE.LineDashedMaterial({ linewidth: 3, color: colorHex, dashSize: 3, gapSize: 3 });
-//     } else {
-//         mat = new THREE.LineBasicMaterial({ linewidth: 3, color: colorHex });
-//     }
-//
-//     geom.vertices.push( src.clone() );
-//     geom.vertices.push( dst.clone() );
-//     geom.computeLineDistances(); // This one is SUPER important, otherwise dashed lines will appear as simple plain lines
-//
-//     var axis = new THREE.Line( geom, mat, THREE.LinePieces );
-//
-//     return axis;
-//
-// };
-//
-//
-// function buildAxes( length ) {
-//     var axes = new THREE.Object3D();
-//
-//     axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( length, 0, 0 ), 0xFF0000, false ) ); // +X
-//     axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( -length, 0, 0 ), 0xFF0000, true) ); // -X
-//     axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, length, 0 ), 0x00FF00, false ) ); // +Y
-//     axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, -length, 0 ), 0x00FF00, true ) ); // -Y
-//     axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, length ), 0x0000FF, false ) ); // +Z
-//     axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, -length ), 0x0000FF, true ) ); // -Z
-//
-//     return axes;
-//
-// }
+function buildAxis( src, dst, colorHex, dashed ) {
+    var geom = new THREE.Geometry(),
+        mat;
+
+    if(dashed) {
+        mat = new THREE.LineDashedMaterial({ linewidth: 3, color: colorHex, dashSize: 3, gapSize: 3 });
+    } else {
+        mat = new THREE.LineBasicMaterial({ linewidth: 3, color: colorHex });
+    }
+
+    geom.vertices.push( src.clone() );
+    geom.vertices.push( dst.clone() );
+    geom.computeLineDistances(); // This one is SUPER important, otherwise dashed lines will appear as simple plain lines
+
+    var axis = new THREE.Line( geom, mat, THREE.LinePieces );
+
+    return axis;
+
+};
+
+
+function buildAxes( length ) {
+    var axes = new THREE.Object3D();
+
+    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( length, 0, 0 ), 0xFF0000, false ) ); // +X
+    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( -length, 0, 0 ), 0xFF0000, true) ); // -X
+    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, length, 0 ), 0x00FF00, false ) ); // +Y
+    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, -length, 0 ), 0x00FF00, true ) ); // -Y
+    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, length ), 0x0000FF, false ) ); // +Z
+    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, -length ), 0x0000FF, true ) ); // -Z
+
+    return axes;
+
+}
 
 function convertToHexColor(i) {
 	let result = "#000000";
@@ -763,7 +808,7 @@ function swc_parser(swc_file) {
 	var swc_ar = swc_file.split("\n");
 	var swc_json = {};
 
-	var float = '-?\\d*(?:\\.\\d+)?';
+	var float = '-?\\d*(?:\\.?\\d+)?';
 	var pattern = new RegExp('^[ \\t]*(' + [
 		'\\d+',   // index
 		'\\d+',  // type
@@ -773,7 +818,6 @@ function swc_parser(swc_file) {
 		float,    // radius
 		'-1|\\d+' // parent
 	].join(')[ \\t]+(') + ')[ \\t]*$','m');
-
 	swc_ar.forEach(function (e) {
 		//if line is good, put into json
 		var match = e.match(pattern);
