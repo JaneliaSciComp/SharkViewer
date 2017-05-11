@@ -286,18 +286,19 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
             }
         }
         console.log(customAttributes);
-        material = new THREE.ShaderMaterial({
-			uniforms : customUniforms,
-			attributes : customAttributes,
-			vertexShader : this.vertexShader,
-			fragmentShader : this.fragementShader,
-			transparent : true,
-			alphaTest: 0.5,  // if having transparency issues, try including: alphaTest: 0.5,
-			depthTest : true,
-			// blending: THREE.AdditiveBlending, depthTest: false,
-			// I guess you don't need to do a depth test if you are alpha blending?
-			//
-		});
+        material = new THREE.ShaderMaterial(
+            {
+                uniforms : customUniforms,
+                attributes : customAttributes,
+                vertexShader : this.vertexShader,
+                fragmentShader : this.fragementShader,
+                transparent : true,
+                alphaTest: 0.5,  // if having transparency issues, try including: alphaTest: 0.5,
+
+            });
+        // console.log(material);
+        // console.log(geometry);
+        // console.log(neuron);
 
 
         var particles = new THREE.ParticleSystem(geometry, material);
@@ -414,7 +415,7 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
         neuron.add(line);
     }
 	return neuron;
-}
+};
 
 //Sets up three.js scene 
 SharkViewer.prototype.init = function () {
@@ -520,7 +521,7 @@ SharkViewer.prototype.init = function () {
 
 
 	if (this.effect === 'noeffect') this.effect = false;
-	 
+
 	//set up colors and materials based on color array
 	this.three_colors = [];
 	for (var color in this.colors) {
@@ -534,7 +535,8 @@ SharkViewer.prototype.init = function () {
 			this.three_materials.push(new THREE.MeshBasicMaterial({ color: this.colors[color] }));
 		}
 	}
-		
+
+
 
 	//setup render
 	this.renderer = new THREE.WebGLRenderer({
@@ -548,7 +550,7 @@ SharkViewer.prototype.init = function () {
 	this.scene = new THREE.Scene();
 
 	// put a camera in the scene
-	fov = 45;
+	this.fov = 45;
 	// get bounding box, center
 	//let cameraPosition = this.calculateCameraPosition(fov, this.center, boundingBox);
 	let cameraPosition = -10000;
@@ -559,10 +561,10 @@ SharkViewer.prototype.init = function () {
 	// TODO actually write this part
 	else if (false){
 		let boundingBox = false;
-		cameraPosition = this.calculateCameraPosition(fov, this.center, boundingBox);
+		cameraPosition = this.calculateCameraPosition(this.fov, this.center, boundingBox);
 	}
 
-	this.camera = new THREE.PerspectiveCamera(fov, this.WIDTH/this.HEIGHT, 1, Math.abs(cameraPosition) * 5);
+	this.camera = new THREE.PerspectiveCamera(this.fov, this.WIDTH/this.HEIGHT, 1, Math.abs(cameraPosition) * 5);
 	this.scene.add(this.camera);
 
 	this.camera.position.z = cameraPosition;
