@@ -46,6 +46,7 @@ var SharkViewer = function (parameters) {
 	this.brainboundingbox = null;
     this.compartment_path = "";
     this.camera_z = null;
+    this.axes_size = null;
 	this.setValues(parameters);
 };
 
@@ -570,9 +571,10 @@ SharkViewer.prototype.init = function () {
 	this.camera.position.z = cameraPosition;
 
 
-
-	this.axes = buildAxes(1000000);
-	this.scene.add(this.axes);
+	if (this.axes_size) {
+		this.axes = buildAxes(this.axes_size);
+		this.scene.add(this.axes);
+	}
 
 
 	if (this.flip === true) {
