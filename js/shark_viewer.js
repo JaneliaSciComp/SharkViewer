@@ -152,8 +152,8 @@ SharkViewer.prototype.createNeuronElement = function() {
 		let neuron_color = neuron.color;
 		let css_color = neuron_color;
 		if ( typeof neuron_color !== 'string') css_color = convertToHexColor(neuron_color);
-		toinnerhtml += "<div><span style='height:10px;width:10px;background:" + css_color +
-					";display:inline-block;'></span> : " + neuron_name +"</div>";
+		toinnerhtml += "<div data-neuron-name='" + neuron_name + "'><span style='height:10px;width:10px;border:solid black 1px;background:" + css_color +
+					";display:inline-block;'></span> : " + neuron_name +"<span class='neurondelete' data-neuron-name='" + neuron_name + "'> x</span></div>";
 	});
 	neurondiv.innerHTML = toinnerhtml;
 	return neurondiv;
@@ -167,7 +167,7 @@ SharkViewer.prototype.createCompartmentElement = function() {
 		let compartment_color = compartment.color;
 		let css_color = compartment_color;
 		if ( typeof compartment_color !== 'string') css_color = convertToHexColor(compartment_color);
-		toinnerhtml += "<div><span style='height:10px;width:10px;background:#" + css_color +
+		toinnerhtml += "<div data-compartment-name='" + compartment_name + "'><span style='height:10px;width:10px;border:solid black 1px;background:#" + css_color +
 					";display:inline-block;'></span> : " + compartment_name +"</div>";
 	});
 	compartmentdiv.innerHTML = toinnerhtml;
@@ -749,8 +749,14 @@ SharkViewer.prototype.loadNeuron = function(filename, color=null, name="") {
 };
 
 SharkViewer.prototype.unloadNeuron = function(filename){
-	var neuron = this.scene.getObjectByName(filename);
+	const neuron = this.scene.getObjectByName(filename);
 	this.scene.remove(neuron);
+	const index = this.neurons.indexOf(neuron);
+	console.log("Index", index, this);
+	console.log(this.neurons, filename);
+	if (index > -1) {
+	    this.neurons.splice(index, 1);
+	}
 };
 
 function buildAxis( src, dst, colorHex, dashed ) {
