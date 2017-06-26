@@ -47,6 +47,7 @@ var SharkViewer = function (parameters) {
     this.compartment_path = "";
     this.camera_z = null;
     this.axes_size = null;
+    this.delete_item_html = "x";
 	this.setValues(parameters);
 };
 
@@ -145,13 +146,15 @@ SharkViewer.prototype.createNeuronElement = function() {
 	let neurondiv = document.createElement('div');
 	neurondiv.id='neurons_element';
 	let toinnerhtml = "";
+	const delete_html = this.delete_item_html;
 	this.neurons.forEach( function(neuron){
 		let neuron_name = neuron.name;
 		let neuron_color = neuron.color;
 		let css_color = neuron_color;
 		if ( typeof neuron_color !== 'string') css_color = convertToHexColor(neuron_color);
 		toinnerhtml += "<div data-neuron-name='" + neuron_name + "'><span style='height:10px;width:10px;border:solid black 1px;background:" + css_color +
-					";display:inline-block;'></span> : " + neuron_name + "<span class='neurondelete' data-neuron-name='" + neuron_name + "'> x</span></div>";
+					";display:inline-block;'></span> : " + neuron_name + "<span class='neurondelete' data-neuron-name='" + neuron_name + "'>" + 
+					delete_html + "</span></div>";
 	});
 	neurondiv.innerHTML = toinnerhtml;
 	return neurondiv;
@@ -160,13 +163,16 @@ SharkViewer.prototype.createCompartmentElement = function() {
 	let compartmentdiv = document.createElement('div');
 	compartmentdiv.id='compartments_element';
 	let toinnerhtml = "";
+	const delete_html = this.delete_item_html;
 	this.compartments.forEach( function(compartment){
 		let compartment_name = compartment.name;
 		let compartment_color = compartment.color;
 		let css_color = compartment_color;
 		if ( typeof compartment_color !== 'string') css_color = convertToHexColor(compartment_color);
 		toinnerhtml += "<div data-compartment-name='" + compartment_name + "'><span style='height:10px;width:10px;border:solid black 1px;background:#" + css_color +
-					";display:inline-block;'></span> : " + compartment_name + "<span class='compartmentdelete' data-compartment-name='" + compartment_name + "'> x</span></div>";
+					";display:inline-block;'></span> : " + compartment_name + 
+					"<span class='compartmentdelete' data-compartment-name='" + compartment_name + "'> " + 
+					delete_html + "</span></div>";
 	});
 	compartmentdiv.innerHTML = toinnerhtml;
 	return compartmentdiv;
