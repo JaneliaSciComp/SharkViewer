@@ -12941,12 +12941,10 @@ disabled: false
 	var count = 0;
 	function readSwcFile(e) {
 		var f = e.target.files[0]; 
-		console.log(f);
 		if (f) {
 			var r = new FileReader();
 			r.onload = function(e2) {
 				var color_idx = count % colors.length;
-				console.log(f.name)     ;
 				s.loadNeuron(e2.target.result, colors[color_idx], f.name);
 				count++;
 			}
@@ -12993,10 +12991,10 @@ disabled: false
 		).on("select_node.jstree", function(e, d){
 			let filename = d.node.original.filename;
 			let color = d.node.original.color;
-			s.loadAllen(filename, color);
+			s.loadCompartment(filename, color);
 		}).on("deselect_node.jstree", function(e, d){
 			let filename = d.node.original.filename;
-			s.unloadAllen(filename);
+			s.unloadCompartment(filename);
 		});
 		s.renderer.domElement.addEventListener('neuronloaded', function(e) {
 			$('#neurons').html(s.createNeuronElement());
@@ -13008,9 +13006,19 @@ disabled: false
 		});
 		s.renderer.domElement.addEventListener('compartmentloaded', function(e) {
 			$('#compartments').html(s.createCompartmentElement());
+			$('.compartmentdelete').click(function(e){
+				let compartment_name = $(this).data('compartment-name');
+				const compartment_id = compartment_name.split("_")[1].split(".")[0];
+				$('#allen_mouse').jstree('uncheck_node', compartment_id)
+				$('#compartments').html(s.createCompartmentElement());
+			})
 		});
 		s.renderer.domElement.addEventListener('compartmentunloaded', function(e) {
 			$('#compartments').html(s.createCompartmentElement());
+			$('.compartmentdelete').click(function(e){
+				let compartment_name = $(this).data('compartment-name');
+				$('#compartments').html(s.createCompartmentElement());
+			})
 		});
 	}
 	</script>

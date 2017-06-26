@@ -61,9 +61,7 @@ SharkViewer.prototype.calculateBoundingBox = function (swc_json) {
 			zmin: Infinity,
 			zmax: -Infinity,
 		};
-		console.log("Neurons", this.neurons, this.neurons.length);
 		for (let i = 0;  i < this.neurons.length; i++) {
-				console.log("I", i);
 				let neuronbbox = new THREE.Box3().setFromObject(this.neurons[i]);
 				if (neuronbbox.min.x < boundingBox.xmin) boundingBox.xmin = neuronbbox.min.x;
 				if (neuronbbox.max.x > boundingBox.xmax) boundingBox.xmax = neuronbbox.max.x;
@@ -153,7 +151,7 @@ SharkViewer.prototype.createNeuronElement = function() {
 		let css_color = neuron_color;
 		if ( typeof neuron_color !== 'string') css_color = convertToHexColor(neuron_color);
 		toinnerhtml += "<div data-neuron-name='" + neuron_name + "'><span style='height:10px;width:10px;border:solid black 1px;background:" + css_color +
-					";display:inline-block;'></span> : " + neuron_name +"<span class='neurondelete' data-neuron-name='" + neuron_name + "'> x</span></div>";
+					";display:inline-block;'></span> : " + neuron_name + "<span class='neurondelete' data-neuron-name='" + neuron_name + "'> x</span></div>";
 	});
 	neurondiv.innerHTML = toinnerhtml;
 	return neurondiv;
@@ -168,7 +166,7 @@ SharkViewer.prototype.createCompartmentElement = function() {
 		let css_color = compartment_color;
 		if ( typeof compartment_color !== 'string') css_color = convertToHexColor(compartment_color);
 		toinnerhtml += "<div data-compartment-name='" + compartment_name + "'><span style='height:10px;width:10px;border:solid black 1px;background:#" + css_color +
-					";display:inline-block;'></span> : " + compartment_name +"</div>";
+					";display:inline-block;'></span> : " + compartment_name + "<span class='compartmentdelete' data-compartment-name='" + compartment_name + "'> x</span></div>";
 	});
 	compartmentdiv.innerHTML = toinnerhtml;
 	return compartmentdiv;
@@ -236,7 +234,6 @@ SharkViewer.prototype.nodeColor = function (node) {
 };
 
 SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
-	console.log(swc_json);
     //neuron is object 3d which ensures all components move together
     var neuron = new THREE.Object3D();
 	var geometry, material;
@@ -286,7 +283,6 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
                 customAttributes.typeColor.value.push(node_color);
             }
         }
-        console.log(customAttributes);
         material = new THREE.ShaderMaterial(
             {
                 uniforms : customUniforms,
@@ -367,8 +363,6 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
                     }
                 }
             }
-            console.log("HERE I AM");
-            console.log(coneAttributes);
             var coneMaterial = new THREE.ShaderMaterial(
                 {
                     attributes: coneAttributes,
@@ -661,7 +655,7 @@ SharkViewer.prototype.setValues = function (values) {
 		}
 	}
 };
-SharkViewer.prototype.loadAllen = function(filename, color) {
+SharkViewer.prototype.loadCompartment = function(filename, color) {
 	let loader = new THREE.OBJLoader();
 
 	const that = this;
@@ -718,11 +712,15 @@ SharkViewer.prototype.loadAllen = function(filename, color) {
 	});
 };
 
-SharkViewer.prototype.unloadAllen = function(filename) {
+SharkViewer.prototype.unloadCompartment = function(filename) {
 	const compartment_unloaded_event =  new CustomEvent('compartmentunloaded', {'detail': {'name': filename}});
 	this.renderer.domElement.dispatchEvent(compartment_unloaded_event);
 	var selectedObj = this.scene.getObjectByName(filename);
 	this.scene.remove(selectedObj);
+	const index = this.compartments.indexOf(selectedObj);
+	if (index > -1) {
+	    this.compartments.splice(index, 1);
+	}
 };
 
 SharkViewer.prototype.loadNeuronNodes = function(filename, color, nodes) {
@@ -752,8 +750,6 @@ SharkViewer.prototype.unloadNeuron = function(filename){
 	const neuron = this.scene.getObjectByName(filename);
 	this.scene.remove(neuron);
 	const index = this.neurons.indexOf(neuron);
-	console.log("Index", index, this);
-	console.log(this.neurons, filename);
 	if (index > -1) {
 	    this.neurons.splice(index, 1);
 	}
