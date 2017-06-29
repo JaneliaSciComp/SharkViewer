@@ -519,6 +519,7 @@ SharkViewer.prototype.init = function () {
 
     this.neurons = [];
     this.compartments = [];
+    this.mouse = new THREE.Vector2();
 
 
 	if (this.effect === 'noeffect') this.effect = false;
@@ -623,9 +624,17 @@ SharkViewer.prototype.init = function () {
 		this.my_effect.setSize(this.WIDTH, this.HEIGHT);
 	}
 
+	//Raycaster
+	this.raycaster = new THREE.Raycaster();
+	this.vector = new THREE.Vector3();
+	this.dir = new THREE.Vector3();
+	console.log(this.raycaster);
+
 	//Controls
 	this.controls = new THREE.TrackballControls(this.camera, document.getElementById(this.dom_element));
 	this.controls.addEventListener('change', this.render.bind(this));
+
+	document.addEventListener( 'mousemove', this.onDocumentMouseMove.bind(this), false );
 };
 
 // animation loop
@@ -640,12 +649,25 @@ SharkViewer.prototype.animate = function () {
 
 };
 
+SharkViewer.prototype.onDocumentMouseMove = function ( event ) {
+	event.preventDefault();
+	this.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	this.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
+
 // render the scene
 SharkViewer.prototype.render = function () {
 	// actually render the scene
 	if (this.effect) this.my_effect.render(this.scene, this.camera);
 	else this.renderer.render(this.scene, this.camera);
 	if (this.show_stats) this.stats.update();
+	this.vector.set( ( this.mouse.x / window.innerWidth ) * 2 - 1, - ( this.mouse.y / window.innerHeight ) * 2 + 1, 0.5 ); // z = 0.5 important!
+	this.vector.unproject( this.camera );
+	this.raycaster.set( this.camera.position, this.vector.sub( this.camera.position ).normalize());
+	// this.raycaster.set( this.mouse, this.camera );
+	let intersections = this.raycaster.intersectObjects( this.neurons );
+	intersection = ( intersections.length ) > 0 ? intersections[ 0 ] : null;
+	console.log("Intersections", intersections);
 };
 
 //sets up user specified configuration
