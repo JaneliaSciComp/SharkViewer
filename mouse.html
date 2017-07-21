@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Shark Viewer</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+			
+		<script src="js/threejs/three.js"></script>
+		<script src="js/threejs/OBJLoader.js"></script>
+		<script src="js/threejs/TrackballControls.js"></script>
+		<script src="./js/shark_viewer.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+		<script src="js/custom-event-polyfill.js"></script>
+
+
+
+<script id='metadata_swc' type='text/plain'>
+[{"label":"undefined","type":0},{"label":"soma","type":1},{"label":"axon","type":2},{"label":"dendrite","type":3},{"label":"apical dendrite","type":4},{"label":"fork point","type":5},{"label":"end point","type":6},{"label":"custom","type":7}]
+</script>
+<script>
+
+</script>
+</head>
+<body>
+		<div id="neurons"></div>
+	<!-- three.js container -->
+    	<div id="container" style='position:relative'></div>
+	<!-- info on screen display -->
+		<label for='swc_input'>Upload a swc file to view it in the SharkViewer:</label><input type='file' name='swc_input' id='swc_input' />
+
+	<script type='text/javascript'>
+	var mdata;
+	// Using material design A200 set
+	var colors = [
+		0xFF5252,
+		0x7C4DFF,
+		0x40C4FF,
+		0x69F0AE,
+		0xFFFF00,
+		0xFF6E40,
+		0xFF4081,
+		0x536DFE,
+		0x18FFFF,
+		0xB2FF59,
+		0xFFD740,
+		0xE040FB,
+		0x448AFF,
+		0x64FFDA,
+		0xEEFF41,
+		0xFFAB40,
+	];
+	var count = 0;
+	function readSwcFile(e) {
+		var f = e.target.files[0]; 
+		console.log(f);
+		if (f) {
+			var r = new FileReader();
+			r.onload = function(e2) {
+				var color_idx = count % colors.length;
+				console.log(f.name)     ;
+				s.loadNeuron(e2.target.result, colors[color_idx], f.name);
+				count++;
+			};
+			r.readAsText(f);
+		} else { 
+		      alert("Failed to load file");
+		}
+	}
+
+    window.onload = function() {
+		document.getElementById('swc_input').addEventListener('change', readSwcFile, false);
+		mdata = JSON.parse(document.getElementById("metadata_swc").text);
+		s = new SharkViewer({
+			dom_element: 'container',
+			center_node: -1, 
+			show_stats: false,
+            WIDTH: 600,
+        	HEIGHT: 600,
+			show_cones: true,
+			min_radius: 50,
+			mode: 'particle',
+			axes_size: 100000,
+			camera_z: 200000,
+		});
+		s.init();
+		s.animate();
+		s.renderer.domElement.addEventListener('neuronloaded', function(e) {
+			$('#neurons').html(s.createNeuronElement());
+		});
+
+	}
+	</script>
+</body>
+</html>
+
+
+
