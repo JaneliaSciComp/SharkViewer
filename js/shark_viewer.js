@@ -9,16 +9,16 @@ var SharkViewer = function (parameters) {
 	*		radius: <radius of node (float)>,
 	*		}
 	*	}
-	*/		
-	this.swc = {}; 
+	*/
+	this.swc = {};
 	//html element that will recieve webgl canvas
-	this.dom_element = 'container'; 
+	this.dom_element = 'container';
 	//mode (sphere, particle, skeleton)
-	this.mode = 'particle'; 
+	this.mode = 'particle';
 	//height of canvas
-	this.HEIGHT = window.innerHeight; 
+	this.HEIGHT = window.innerHeight;
 	//width of canvas
-	this.WIDTH = window.innerWidth; 
+	this.WIDTH = window.innerWidth;
 	//which node to center neuron on (starts at 1), -1 to center at center of bounding box
 	this.center_node = -1;
 	//flip y axis
@@ -27,7 +27,7 @@ var SharkViewer = function (parameters) {
 	this.show_stats = false;
 	//show cones between cylindars for particle and sphere mode
 	this.show_cones = true;
-	//color array, nodes of type 0 show as first color, etc. 
+	//color array, nodes of type 0 show as first color, etc.
 	this.colors = [
 		0x31ffdc,
 		0x6d4ff3,
@@ -93,8 +93,8 @@ SharkViewer.prototype.generateSphere = function (node) {
 //generates cones connecting spheres
 SharkViewer.prototype.generateConeGeometry = function (node, node_parent) {
 	var coneMaterial = this.three_materials[ node_parent.type ];
-	var node_vec = new THREE.Vector3(node.x, node.y, node.z); 
-	var node_parent_vec = new THREE.Vector3(node_parent.x, node_parent.y, node_parent.z); 
+	var node_vec = new THREE.Vector3(node.x, node.y, node.z);
+	var node_parent_vec = new THREE.Vector3(node_parent.x, node_parent.y, node_parent.z);
 	var dist = node_vec.distanceTo(node_parent_vec);
 	var cylAxis = new THREE.Vector3().subVectors(node_vec, node_parent_vec);
 	cylAxis.normalize();
@@ -107,12 +107,12 @@ SharkViewer.prototype.generateConeGeometry = function (node, node_parent) {
 	var geometry = new THREE.CylinderGeometry(r1, r2, dist);
 	var mesh = new THREE.Mesh(geometry, coneMaterial);
 	mesh.matrixAutoUpdate = false;
-	mesh.matrix.makeRotationAxis( rotationAxis, -theta );	
+	mesh.matrix.makeRotationAxis( rotationAxis, -theta );
 	var position = new THREE.Vector3((node.x + node_parent.x) / 2, (node.y + node_parent.y) / 2,(node.z + node_parent.z) / 2);
 	mesh.matrix.setPosition(position);
 	return mesh;
-}; 
-		
+};
+
 //generates particle verticies
 SharkViewer.prototype.generateParticle = function (node) {
 	return new THREE.Vector3(node.x, node.y, node.z);
@@ -136,7 +136,7 @@ SharkViewer.prototype.createMetadataElement = function(metadata, colors) {
 		toinnerhtml += "<div><span style='height:10px;width:10px;background:" + css_color +
 					";display:inline-block;'></span> : " + m.label +"</div>";
 	});
-    metadiv.innerHTML = toinnerhtml; 
+    metadiv.innerHTML = toinnerhtml;
 	return metadiv;
 };
 
@@ -151,7 +151,7 @@ SharkViewer.prototype.createNeuronElement = function() {
 		let css_color = neuron_color;
 		if ( typeof neuron_color !== 'string') css_color = convertToHexColor(neuron_color);
 		toinnerhtml += "<div data-neuron-name='" + neuron_name + "'><span style='height:10px;width:10px;border:solid black 1px;background:" + css_color +
-					";display:inline-block;'></span> : " + neuron_name + "<span class='neurondelete' data-neuron-name='" + neuron_name + "'>" + 
+					";display:inline-block;'></span> : " + neuron_name + "<span class='neurondelete' data-neuron-name='" + neuron_name + "'>" +
 					delete_html + "</span></div>";
 	});
 	neurondiv.innerHTML = toinnerhtml;
@@ -168,8 +168,8 @@ SharkViewer.prototype.createCompartmentElement = function() {
 		let css_color = compartment_color;
 		if ( typeof compartment_color !== 'string') css_color = convertToHexColor(compartment_color);
 		toinnerhtml += "<div data-compartment-name='" + compartment_name + "'><span style='height:10px;width:10px;border:solid black 1px;background:#" + css_color +
-					";display:inline-block;'></span> : " + compartment_name + 
-					"<span class='compartmentdelete' data-compartment-name='" + compartment_name + "'> " + 
+					";display:inline-block;'></span> : " + compartment_name +
+					"<span class='compartmentdelete' data-compartment-name='" + compartment_name + "'> " +
 					delete_html + "</span></div>";
 	});
 	compartmentdiv.innerHTML = toinnerhtml;
@@ -181,7 +181,7 @@ SharkViewer.prototype.generateSkeleton = function (node, node_parent) {
 	var vertex = new THREE.Vector3(node.x, node.y, node.z);
 	var vertex_parent = new THREE.Vector3(node_parent.x, node_parent.y, node_parent.z);
 	return {
-		'child' : vertex, 
+		'child' : vertex,
 		'parent' : vertex_parent
 	};
 };
@@ -212,13 +212,13 @@ SharkViewer.prototype.generateCone = function (node, node_parent, color) {
 	var n2 = n1.clone().negate();
 
 	return {
-		'child' : cone_child, 
-		'parent' : cone_parent, 
-		'normal1' : n1, 
+		'child' : cone_child,
+		'parent' : cone_parent,
+		'normal1' : n1,
 		'normal2': n2
 	};
 };
-		
+
 //calculates camera position based on boudning box
 SharkViewer.prototype.calculateCameraPosition = function (fov, center, boundingBox) {
 	var x1 = Math.floor(center[0] - boundingBox.xmin)*2;
@@ -304,6 +304,7 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
                 alphaTest: 0.5,  // if having transparency issues, try including: alphaTest: 0.5,
 
             });
+        material.extensions.fragDepth = true;
         // console.log(material);
         // console.log(geometry);
         // console.log(neuron);
@@ -376,7 +377,7 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
             }
             var coneMaterial = new THREE.ShaderMaterial(
                 {
-                    attributes: coneAttributes,
+                    //attributes: coneAttributes,
                     uniforms: coneUniforms,
                     vertexShader:   this.vertexShaderCone,
                     fragmentShader: this.fragmentShaderCone,
@@ -423,7 +424,7 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
 	return neuron;
 };
 
-//Sets up three.js scene 
+//Sets up three.js scene
 SharkViewer.prototype.init = function () {
 
 	//set up shaders
@@ -445,7 +446,6 @@ SharkViewer.prototype.init = function () {
     ].join("\n");
 
     this.fragementShader = [
-		'#extension GL_EXT_frag_depth : enable',
 		'uniform sampler2D sphereTexture; // Imposter image of sphere',
 		'uniform mat4 projectionMatrix;',
 		'varying vec3 vColor; // colors associated to vertices; assigned by vertex shader',
@@ -598,7 +598,7 @@ SharkViewer.prototype.init = function () {
 	var light = new THREE.DirectionalLight( 0xffffff);
 	light.position.set(0, 0, -1000);
 	this.scene.add(light);
-	
+
 	if (this.show_stats) {
 		//FPS stats
 		this.stats = new Stats();
