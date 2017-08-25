@@ -258,7 +258,7 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
         // properties that may vary from particle to particle. only accessible in vertex shaders!
         //	(can pass color info to fragment shader via vColor.)
         // compute scale for particles, in pixels
-        var particleScale =  (0.5 * this.HEIGHT * this.renderer.devicePixelRatio) / Math.tan(0.5 * this.fov * Math.PI / 180.0);
+        var particleScale =  (0.5 * this.HEIGHT * window.devicePixelRatio) / Math.tan(0.5 * this.fov * Math.PI / 180.0);
 
         var customAttributes =
             {
@@ -280,7 +280,6 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
             		node_color = new THREE.Color(color);
 				}
                 let particle_vertex = this.generateParticle(swc_json[node]);
-                customAttributes.verticies.value.push(particle_vertex);
                 let radius =  swc_json[node].radius;
                 if (this.min_radius && radius < this.min_radius) {
                 	radius = this.min_radius;
@@ -289,10 +288,14 @@ SharkViewer.prototype.createNeuron = function(swc_json, color= undefined) {
                 customAttributes.typeColor.value.push(node_color.r);
                 customAttributes.typeColor.value.push(node_color.g);
                 customAttributes.typeColor.value.push(node_color.b);
+                customAttributes.verticies.value.push(particle_vertex.x);
+                customAttributes.verticies.value.push(particle_vertex.y);
+                customAttributes.verticies.value.push(particle_vertex.z);
             }
         }
-		geometry.addAttribute( 'radius', new THREE.Float32BufferAttribute(customAttributes.radius.value, 1))
-		geometry.addAttribute( 'color', new THREE.Float32BufferAttribute(customAttributes.typeColor.value, 3))
+        geometry.addAttribute( 'position', new THREE.Float32BufferAttribute(customAttributes.verticies.value, 3))
+        geometry.addAttribute( 'radius', new THREE.Float32BufferAttribute(customAttributes.radius.value, 1))
+		geometry.addAttribute( 'typeColor', new THREE.Float32BufferAttribute(customAttributes.typeColor.value, 3))
 
         material = new THREE.ShaderMaterial(
             {
@@ -583,8 +586,8 @@ SharkViewer.prototype.init = function () {
         this.camera.up.setY(-1);
 	}
 
-	this.neuron = this.createNeuron(this.swc);
-	this.scene.add(this.neuron);
+	//this.neuron = this.createNeuron(this.swc);
+	//this.scene.add(this.neuron);
 
 
 	//Lights
