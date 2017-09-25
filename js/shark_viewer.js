@@ -39,6 +39,16 @@ var SharkViewer = function (parameters) {
       0x606060,
    ];
    this.metadata = false;
+
+   // initialize values to display the coordinate system
+   this.draw_coords = false;
+   this.coords_dom_element = null;
+   this.coords_width = 50;
+   this.coords_height = 50;
+   this.coordsDistance = 20;
+   this.coordsExtent = 3;
+   this.coordsCamera = null;
+
    this.setValues(parameters);
 };
 
@@ -54,6 +64,11 @@ SharkViewer.prototype.calculateBoundingBox = function () {
          if (this.swc[node].z > this.boundingBox.zmax) this.boundingBox.zmax = this.swc[node].z;
       }
    }
+};
+
+// generate coordinate system
+SharkViewer.prototype.generateAxes = function(extent) {
+   return new THREE.AxisHelper(extent);
 };
 
 // generates sphere mesh
@@ -134,7 +149,6 @@ SharkViewer.prototype.createMetadataElement = function (metadata, colors) {
       var three_color = (mtype < colors.length) ? colors[mtype] : colors[0];
       var css_color = three_color;
       if (typeof three_color != 'string') css_color = convertToHexColor(three_color);
-      console.log(three_color);
       toinnerhtml += "<div><span style='height:10px;width:10px;background:" + css_color +
             ";display:inline-block;'></span> : " + m.label + "</div>";
    });
@@ -504,6 +518,35 @@ SharkViewer.prototype.init = function () {
 
    // centers neuron
    this.neuron.position.set(-this.center[0], -this.center[1], -this.center[2]);
+
+   // draw coordinate system, if needed
+   if (this.draw_coords){
+      var coords = this.generateAxes(this.coordsExtent);
+
+      this.coordsScene = new THREE.Scene();
+      this.coordsScene.add(coords);
+      this.coordsRenderer = new THREE.WebGLRenderer({
+         antialias: true,	// to get smoother output
+      });
+
+      this.coordsRenderer.setClearColorHex(0xffffff, 1);
+      this.coordsRenderer.setSize(this.coords_width,this.coords_height);
+
+      // create and style the DOM element for the coordinate system
+      var coordsElem = document.getElementById(this.coords_dom_element);
+      if (coordsElem){
+         coordsElem.style.left = 0;
+         coordsElem.style.top = (this.HEIGHT - this.coords_height) + 'px';
+         coordsElem.style.position = 'absolute';
+         coordsElem.style.border = 'thin solid #DDD';
+         coordsElem.appendChild(this.coordsRenderer.domElement);
+      }
+
+      this.coordsCamera = new THREE.PerspectiveCamera(fov, 1, 2, cameraPosition * 5);
+      this.coordsScene.add(this.coordsCamera);
+      this.coordsCamera.position.z = cameraPosition;
+   }
+
    this.scene.add(this.neuron);
 
    // lights
@@ -549,6 +592,15 @@ SharkViewer.prototype.animate = function () {
    // - see details at http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
    requestAnimationFrame(this.animate.bind(this));
    this.controls.update();
+
+   // animate coordinate system according to animation of object
+   if (this.draw_coords){
+      this.coordsCamera.position.copy(this.camera.position).sub(this.controls.target);
+      this.coordsCamera.up.copy(this.camera.up);
+      this.coordsCamera.position.setLength(this.coordsDistance);
+      this.coordsCamera.lookAt(this.coordsScene.position);
+   }
+
    // do the render
    this.render();
 
@@ -560,6 +612,11 @@ SharkViewer.prototype.render = function () {
    if (this.effect) this.my_effect.render(this.scene, this.camera);
    else this.renderer.render(this.scene, this.camera);
    if (this.show_stats) this.stats.update();
+   
+   // render the coordinate system
+   if (this.draw_coords) {
+      this.coordsRenderer.render(this.coordsScene, this.coordsCamera);
+   }
 };
 
 // sets up user specified configuration
