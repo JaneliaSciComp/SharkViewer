@@ -1,0 +1,43 @@
+{
+  "name": "sharkviewer",
+  "version": "1.0.0",
+  "description": "SWC neuron file viewer",
+  "main": "dist/index.js",
+  "dependencies": {
+    "ndb-three-orbit-controls": "^82.1.3",
+    "three": "^0.87.1",
+    "three-obj-loader": "^1.1.3"
+  },
+  "devDependencies": {
+    "eslint": "^5.8.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-prettier": "^3.0.0",
+    "eslint-plugin-react": "^7.11.1",
+    "prettier": "^1.15.1",
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JaneliaSciComp/SharkViewer.git"
+  },
+  "keywords": [
+    "neuroscience",
+    "3D",
+    "swc",
+    "neurons"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JaneliaSciComp/SharkViewer/issues"
+  },
+  "homepage": "https://github.com/JaneliaSciComp/SharkViewer#readme"
+}
