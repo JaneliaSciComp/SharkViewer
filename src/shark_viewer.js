@@ -20,16 +20,10 @@ export default class SharkViewer {
    */
   constructor(args) {
     this.swc = {};
-    // html element that will recieve webgl canvas
-    this.dom_element = args.dom_element || "container";
     // mode (sphere, particle, skeleton)
     this.mode = "particle";
-    // height of canvas
-    this.HEIGHT = window.innerHeight;
-    // width of canvas
-    this.WIDTH = window.innerWidth;
     // flip y axis
-    this.flip = true;
+    this.flip = false;
     // color array, nodes of type 0 show as first color, etc.
     this.colors = [
       0x31ffdc,
@@ -47,6 +41,7 @@ export default class SharkViewer {
     this.compartment_path = "allen_horta/obj/";
     this.on_select_node = null;
     this.on_toggle_node = null;
+    this.show_stats = false;
 
     this.show_cones = true;
     this.brainboundingbox = null;
@@ -61,6 +56,15 @@ export default class SharkViewer {
     this.camera = null;
 
     this.setValues(args);
+    // anything after the above line can not be set by the caller.
+
+    // html element that will receive webgl canvas
+    this.dom_element = document.getElementById(args.dom_element || "container");
+
+    // height of canvas
+    this.HEIGHT = this.dom_element.clientHeight;
+    // width of canvas
+    this.WIDTH = this.dom_element.clientWidth;
   }
 
   // sets up user specified configuration
@@ -375,7 +379,7 @@ export default class SharkViewer {
       const particles = new THREE.Points(geometry, material);
       particles.userData = { indexLookup, materialShader };
 
-      material.onBeforeCompile = function(shader) {
+      material.onBeforeCompile = shader => {
         shader.uniforms.alpha = { value: 0 };
         shader.vertexShader = "uniform float alpha;\n" + shader.vertexShader;
         shader.vertexShader = shader.vertexShader.replace(
@@ -773,9 +777,7 @@ export default class SharkViewer {
     });
     this.renderer.setClearColor(this.backgroundColor, 1);
     this.renderer.setSize(this.WIDTH, this.HEIGHT);
-    document
-      .getElementById(this.dom_element)
-      .appendChild(this.renderer.domElement);
+    this.dom_element.appendChild(this.renderer.domElement);
 
     // create a scene
     this.scene = new THREE.Scene();
@@ -783,12 +785,12 @@ export default class SharkViewer {
     // put a camera in the scene
     this.fov = 45;
     // const cameraPosition = this.calculateCameraPosition(fov);
-    const cameraPosition = -20000;
+    const cameraPosition = 2000;
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
       this.WIDTH / this.HEIGHT,
       1,
-      cameraPosition * 5
+      cameraPosition
     );
     this.scene.add(this.camera);
 
@@ -801,8 +803,8 @@ export default class SharkViewer {
       this.camera.up.setY(-1);
     }
 
-    this.neuron = this.createNeuron(this.swc);
-    this.scene.add(this.neuron);
+    const neuron = this.createNeuron(this.swc);
+    this.scene.add(neuron);
 
     // Lights
     // doesn't actually work with any of the current shaders
@@ -816,12 +818,12 @@ export default class SharkViewer {
 
     if (this.metadata) {
       const mElement = this.createMetadataElement(this.metadata, this.colors);
-      document.getElementById(this.dom_element).appendChild(mElement);
+      this.dom_element.appendChild(mElement);
     }
 
     this.trackControls = new OrbitControls(
       this.camera,
-      document.getElementById(this.dom_element)
+      this.dom_element
     );
     this.trackControls.addEventListener("change", this.render.bind(this));
 
@@ -830,7 +832,7 @@ export default class SharkViewer {
 
   addEventHandler(handler) {
     this.mouseHandler = handler;
-    this.mouseHandler.DomElement = document.getElementById(this.dom_element);
+    this.mouseHandler.DomElement = this.dom_element;
     this.mouseHandler.addListeners();
     this.mouseHandler.ClickHandler = this.onClick.bind(this);
 
@@ -845,9 +847,7 @@ export default class SharkViewer {
   }
 
   onClick(event) {
-    const rect = document
-      .getElementById(this.dom_element)
-      .getBoundingClientRect();
+    const rect = this.dom_element.getBoundingClientRect();
 
     const mouse = new THREE.Vector2();
 

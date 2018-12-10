@@ -4,7 +4,6 @@ import { swc_parser } from "./viewer/util";
 let mdata;
 function readSwcFile(e) {
  const f = e.target.files[0];
-  console.log(f);
   if (f) {
     const r = new FileReader();
     r.onload = function(e2) {
@@ -15,8 +14,6 @@ function readSwcFile(e) {
         const s = new SharkViewer({
           swc,
           dom_element: "container",
-          center_node: -1,
-          show_stats: true,
           metadata: mdata
         });
         s.init();
@@ -38,12 +35,14 @@ window.onload = function() {
   const swc = swc_parser(document.getElementById("swc").text);
   mdata = JSON.parse(document.getElementById("metadata_swc").text);
   const s = new SharkViewer({
-    swc,
     dom_element: "container",
-    center_node: -1,
-    show_stats: true,
-    metadata: mdata
+    metadata: mdata,
+    centerpoint: [24,18,0]
   });
+  window.s = s;
   s.init();
   s.animate();
+  const swc2 = swc_parser(document.getElementById("swc2").text);
+  s.loadNeuron('swc2', null, swc2);
+  s.loadNeuron('swc', null, swc);
 };
