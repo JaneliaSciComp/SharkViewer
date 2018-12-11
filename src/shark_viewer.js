@@ -981,10 +981,7 @@ export default class SharkViewer {
       this.dom_element.appendChild(mElement);
     }
 
-    this.trackControls = new OrbitControls(
-      this.camera,
-      this.dom_element
-    );
+    this.trackControls = new OrbitControls(this.camera, this.dom_element);
     this.trackControls.addEventListener("change", this.render.bind(this));
 
     this.raycaster.params.Points.threshold = DEFAULT_POINT_THRESHOLD;
@@ -1044,25 +1041,6 @@ export default class SharkViewer {
       } else {
         if (!event.shiftKey && !event.altKey && !event.ctrlKey) {
           this.trackControls.target = points[0].point;
-
-          /*
-                    const v1 = points[0].point.clone().project(this.camera);
-                    const v2 = this.trackControls.target.clone().project(this.camera);
-
-                    const wx = (v1.x + 1) / 2;
-                    const wy = (-v1.y + 1) / 2;
-
-                    const wl = wx * this.WIDTH;
-                    const wt = wy * this.HEIGHT;
-
-                    const yx = (v2.x + 1) / 2;
-                    const yy = (-v2.y + 1) / 2;
-
-                    const yl = yx * this.WIDTH;
-                    const yt = yy * this.HEIGHT;
-
-                    this.trackControls.pan(yl - wl, yt - wt);
-                    */
         }
 
         if (this.on_select_node) {
