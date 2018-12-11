@@ -3,6 +3,269 @@ import { NODE_PARTICLE_IMAGE, swc_parser } from "./viewer/util";
 const THREE = require("three");
 require("three-obj-loader")(THREE);
 const OrbitControls = require("ndb-three-orbit-controls")(THREE);
+/* 
+const vertexShader = [
+  "uniform float particleScale;",
+  "attribute float radius;",
+  "attribute vec3 typeColor;",
+  "varying vec3 vColor;",
+  "varying vec4 mvPosition;",
+  "varying float vRadius;",
+  "void main() ",
+  "{",
+  "vColor = vec3(typeColor); // set RGB color associated to vertex; use later in fragment shader.",
+  "mvPosition = modelViewMatrix * vec4(position, 1.0);",
+
+  "// gl_PointSize = size;",
+  "gl_PointSize = radius * ((particleScale*2.0) / length(mvPosition.z));",
+  "gl_Position = projectionMatrix * mvPosition;",
+  "vRadius = radius;",
+  "}"
+].join("\n");
+
+const fragmentShader = [
+  "#extension GL_EXT_frag_depth : enable",
+  "uniform sampler2D sphereTexture; // Imposter image of sphere",
+  "uniform mat4 projectionMatrix;",
+  "varying vec3 vColor; // colors associated to vertices; assigned by vertex shader",
+  "varying vec4 mvPosition;",
+  "varying float vRadius;",
+  "void main() ",
+  "{",
+  "// what part of the sphere image?",
+  "vec2 uv = vec2(gl_PointCoord.x, 1.0 - gl_PointCoord.y);",
+  "vec4 sphereColors = texture2D(sphereTexture, uv);",
+  "// avoid further computation at invisible corners",
+  "if (sphereColors.a < 0.3) discard;",
+
+  "// calculates a color for the particle",
+  "// gl_FragColor = vec4(vColor, 1.0);",
+  "// sets a white particle texture to desired color",
+  "// gl_FragColor = sqrt(gl_FragColor * texture2D(sphereTexture, uv)) + vec4(0.1, 0.1, 0.1, 0.0);",
+  "// red channel contains colorizable sphere image",
+  "vec3 baseColor = vColor * sphereColors.r;",
+  "// green channel contains (white?) specular highlight",
+  "vec3 highlightColor = baseColor + sphereColors.ggg;",
+  "gl_FragColor = vec4(highlightColor, sphereColors.a);",
+  "// TODO blue channel contains depth offset, but we cannot use gl_FragDepth in webgl?",
+  "#ifdef GL_EXT_frag_depth",
+  "float far = gl_DepthRange.far; float near = gl_DepthRange.near;",
+  "float dz = sphereColors.b * vRadius;",
+  "vec4 clipPos = projectionMatrix * (mvPosition + vec4(0, 0, dz, 0));",
+  "float ndc_depth = clipPos.z/clipPos.w;",
+  "float depth = (((far-near) * ndc_depth) + near + far) / 2.0;",
+  "gl_FragDepthEXT = depth;",
+  "#endif",
+  "}"
+].join("\n");
+
+const fragmentShaderAnnotation = [
+  "#extension GL_EXT_frag_depth : enable",
+  "uniform sampler2D sphereTexture; // Imposter image of sphere",
+  "uniform mat4 projectionMatrix;",
+  "varying vec3 vColor; // colors associated to vertices; assigned by vertex shader",
+  "varying vec4 mvPosition;",
+  "varying float vRadius;",
+  "void main() ",
+  "{",
+  "// what part of the sphere image?",
+  "vec2 uv = vec2(gl_PointCoord.x, 1.0 - gl_PointCoord.y);",
+  "vec4 sphereColors = texture2D(sphereTexture, uv);",
+  "// avoid further computation at invisible corners",
+  "if (sphereColors.a < 0.3) discard;",
+
+  "// calculates a color for the particle",
+  "// gl_FragColor = vec4(vColor, 1.0);",
+  "// sets a white particle texture to desired color",
+  "// gl_FragColor = sqrt(gl_FragColor * texture2D(sphereTexture, uv)) + vec4(0.1, 0.1, 0.1, 0.0);",
+  "// red channel contains colorizable sphere image",
+  "vec3 baseColor = vColor * sphereColors.r;",
+  "// green channel contains (white?) specular highlight",
+  "gl_FragColor = vec4(baseColor, sphereColors.a);",
+  "// TODO blue channel contains depth offset, but we cannot use gl_FragDepth in webgl?",
+  "#ifdef GL_EXT_frag_depth",
+  "float far = gl_DepthRange.far; float near = gl_DepthRange.near;",
+  "float dz = sphereColors.b * vRadius;",
+  "vec4 clipPos = projectionMatrix * (mvPosition + vec4(0, 0, dz, 0));",
+  "float ndc_depth = clipPos.z/clipPos.w;",
+  "float depth = (((far-near) * ndc_depth) + near + far) / 2.0;",
+  "gl_FragDepthEXT = depth;",
+  "#endif",
+  "}"
+].join("\n");
+
+const vertexShaderCone = [
+  "attribute float radius;",
+  "attribute vec3 typeColor;",
+  "varying vec3 vColor;",
+  "varying vec2 sphereUv;",
+  "varying vec4 mvPosition;",
+  "varying float depthScale;",
+  "void main() ",
+  "{",
+  "	// TODO - offset cone position for different sphere sizes",
+  "	// TODO - implement depth buffer on Chrome",
+  "	mvPosition = modelViewMatrix * vec4(position, 1.0);",
+  "	// Expand quadrilateral perpendicular to both view/screen direction and cone axis",
+  "	vec3 cylAxis = (modelViewMatrix * vec4(normal, 0.0)).xyz; // convert cone axis to camera space",
+  "	vec3 sideDir = normalize(cross(vec3(0.0,0.0,-1.0), cylAxis));",
+  "	mvPosition += vec4(radius * sideDir, 0.0);",
+  "	gl_Position = projectionMatrix * mvPosition;",
+  "	// Pass and interpolate color",
+  "	vColor = typeColor;",
+  "	// Texture coordinates",
+  "	sphereUv = uv - vec2(0.5, 0.5); // map from [0,1] range to [-.5,.5], before rotation",
+  '	// If sideDir is "up" on screen, make sure u is positive',
+  "	float q = sideDir.y * sphereUv.y;",
+  "	sphereUv.y = sign(q) * sphereUv.y;",
+  "	// rotate texture coordinates to match cone orientation about z",
+  "	float angle = atan(sideDir.x/sideDir.y);",
+  "	float c = cos(angle);",
+  "	float s = sin(angle);",
+  "	mat2 rotMat = mat2(",
+  "		c, -s, ",
+  "		s,  c);",
+  "	sphereUv = rotMat * sphereUv;",
+  "	sphereUv += vec2(0.5, 0.5); // map back from [-.5,.5] => [0,1]",
+  "	// We are painting an angled cone onto a flat quad, so depth correction is complicated",
+  "   float foreshortening = length(cylAxis) / length(cylAxis.xy); // correct depth for foreshortening",
+  "   // foreshortening limit is a tradeoff between overextruded cone artifacts, and depth artifacts",
+  "   if (foreshortening > 4.0) foreshortening = 0.9; // hack to not pop out at extreme angles...",
+  "   depthScale = radius * foreshortening; // correct depth for foreshortening",
+  "}"
+].join("\n");
+
+const fragmentShaderCone = [
+  "#extension GL_EXT_frag_depth : enable",
+  "uniform sampler2D sphereTexture; // Imposter image of sphere",
+  "uniform mat4 projectionMatrix;",
+  "varying vec3 vColor;",
+  "varying vec2 sphereUv;",
+  "varying vec4 mvPosition;",
+  "varying float depthScale;",
+  "void main() ",
+  "{",
+  "	vec4 sphereColors = texture2D(sphereTexture, sphereUv);",
+  "	if (sphereColors.a < 0.3) discard;",
+  "	vec3 baseColor = vColor * sphereColors.r;",
+  "	vec3 highlightColor = baseColor + sphereColors.ggg;",
+  "	gl_FragColor = vec4(highlightColor, sphereColors.a);",
+  "#ifdef GL_EXT_frag_depth",
+  "float dz = sphereColors.b * depthScale;",
+  "vec4 mvp = mvPosition + vec4(0, 0, dz, 0);",
+  "vec4 clipPos = projectionMatrix * mvp;",
+  "float ndc_depth = clipPos.z/clipPos.w;",
+  "float far = gl_DepthRange.far; float near = gl_DepthRange.near;",
+  "float depth = (((far-near) * ndc_depth) + near + far) / 2.0;",
+  "gl_FragDepthEXT = depth;",
+  "#endif",
+  "}"
+].join("\n");
+*/
+
+// original
+const vertexShader = [
+  "uniform float particleScale;",
+  "attribute float radius;",
+  "attribute vec3 typeColor;",
+  "//attribute float alpha;",
+  "varying vec3 vColor;",
+  "// varying vec4 mvPosition;",
+  "varying float vAlpha;",
+  "void main() ",
+  "{",
+  "vColor = vec3(typeColor); // set RGB color associated to vertex; use later in fragment shader.",
+  "vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);",
+  "vAlpha = alpha;",
+  "// gl_PointSize = size;",
+  "gl_PointSize = radius * ((particleScale*2.0) / length(mvPosition.z));",
+  "gl_Position = projectionMatrix * mvPosition;",
+  "}"
+].join("\n");
+
+const fragmentShader = [
+  "uniform sampler2D sphereTexture; // Imposter image of sphere",
+  "uniform mat4 projectionMatrix;",
+  "varying vec3 vColor; // colors associated to vertices; assigned by vertex shader",
+  "//varying vec4 mvPosition;",
+  "varying float vAlpha;",
+  "void main() ",
+  "{",
+  "// what part of the sphere image?",
+  "vec2 uv = vec2(gl_PointCoord.x, 1.0 - gl_PointCoord.y);",
+  "vec4 sphereColors = texture2D(sphereTexture, uv);",
+  "// avoid further computation at invisible corners",
+  "if (sphereColors.a < 0.3) discard;",
+  "if (vAlpha < 0.05) discard;",
+
+  "// calculates a color for the particle",
+  "// gl_FragColor = vec4(vColor, 1.0);",
+  "// sets a white particle texture to desired color",
+  "// gl_FragColor = sqrt(gl_FragColor * texture2D(sphereTexture, uv)) + vec4(0.1, 0.1, 0.1, 0.0);",
+  "// red channel contains colorizable sphere image",
+  "vec3 baseColor = vColor * sphereColors.r;",
+  "// green channel contains (white?) specular highlight",
+  "vec3 highlightColor = baseColor + sphereColors.ggg;",
+  "gl_FragColor = vec4(highlightColor, sphereColors.a * vAlpha);",
+  "// TODO blue channel contains depth offset, but we cannot use gl_FragDepth in webgl?",
+  "#ifdef GL_EXT_frag_depth",
+  "// gl_FragDepthExt = 0.5;",
+  "#endif",
+  "}"
+].join("\n");
+
+const vertexShaderCone = [
+  "attribute float radius;",
+  "attribute vec3 typeColor;",
+  "// attribute float alpha;",
+  "varying vec3 vColor;",
+  "varying vec2 sphereUv;",
+  "varying float vAlpha;",
+  "void main() ",
+  "{",
+  "   vAlpha = alpha;",
+  "	// TODO - offset cone position for different sphere sizes",
+  "	// TODO - implement depth buffer on Chrome",
+  "	vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);",
+  "	// Expand quadrilateral perpendicular to both view/screen direction and cone axis",
+  "	vec3 cylAxis = (modelViewMatrix * vec4(normal, 0.0)).xyz; // convert cone axis to camera space",
+  "	vec3 sideDir = normalize(cross(vec3(0.0,0.0,-1.0), cylAxis));",
+  "	mvPosition += vec4(radius * sideDir, 0.0);",
+  "	gl_Position = projectionMatrix * mvPosition;",
+  "	// Pass and interpolate color",
+  "	vColor = typeColor;",
+  "	// Texture coordinates",
+  "	sphereUv = uv - vec2(0.5, 0.5); // map from [0,1] range to [-.5,.5], before rotation",
+  '	// If sideDir is "up" on screen, make sure u is positive',
+  "	float q = sideDir.y * sphereUv.y;",
+  "	sphereUv.y = sign(q) * sphereUv.y;",
+  "	// rotate texture coordinates to match cone orientation about z",
+  "	float angle = atan(sideDir.x/sideDir.y);",
+  "	float c = cos(angle);",
+  "	float s = sin(angle);",
+  "	mat2 rotMat = mat2(",
+  "		c, -s, ",
+  "		s,  c);",
+  "	sphereUv = rotMat * sphereUv;",
+  "	sphereUv += vec2(0.5, 0.5); // map back from [-.5,.5] => [0,1]",
+  "}"
+].join("\n");
+
+const fragmentShaderCone = [
+  "uniform sampler2D sphereTexture; // Imposter image of sphere",
+  "varying vec3 vColor;",
+  "varying vec2 sphereUv;",
+  "varying float vAlpha;",
+  "void main() ",
+  "{",
+  "   if (vAlpha < 0.05) discard;",
+  "	vec4 sphereColors = texture2D(sphereTexture, sphereUv);",
+  "	if (sphereColors.a < 0.3) discard;",
+  "	vec3 baseColor = vColor * sphereColors.r;",
+  "	vec3 highlightColor = baseColor + sphereColors.ggg;",
+  "	gl_FragColor = vec4(highlightColor, sphereColors.a * vAlpha);",
+  "}"
+].join("\n");
 
 const DEFAULT_POINT_THRESHOLD = 50;
 export default class SharkViewer {
@@ -367,8 +630,8 @@ export default class SharkViewer {
 
       material = new THREE.ShaderMaterial({
         uniforms: customUniforms,
-        vertexShader: this.vertexShader,
-        fragmentShader: this.fragementShader,
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
         transparent: true,
         alphaTest: 0.5 // if having transparency issues, try including: alphaTest: 0.5,
       });
@@ -576,8 +839,8 @@ export default class SharkViewer {
 
         const coneMaterial = new THREE.ShaderMaterial({
           uniforms: coneUniforms,
-          vertexShader: this.vertexShaderCone,
-          fragmentShader: this.fragmentShaderCone,
+          vertexShader: vertexShaderCone,
+          fragmentShader: fragmentShaderCone,
           transparent: true,
           depthTest: true,
           side: THREE.DoubleSide,
@@ -649,110 +912,6 @@ export default class SharkViewer {
 
   // Sets up three.js scene
   init() {
-
-    this.vertexShader = [
-      "uniform float particleScale;",
-      "attribute float radius;",
-      "attribute vec3 typeColor;",
-      "//attribute float alpha;",
-      "varying vec3 vColor;",
-      "// varying vec4 mvPosition;",
-      "varying float vAlpha;",
-      "void main() ",
-      "{",
-      "vColor = vec3(typeColor); // set RGB color associated to vertex; use later in fragment shader.",
-      "vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);",
-      "vAlpha = alpha;",
-      "// gl_PointSize = size;",
-      "gl_PointSize = radius * ((particleScale*2.0) / length(mvPosition.z));",
-      "gl_Position = projectionMatrix * mvPosition;",
-      "}"
-    ].join("\n");
-
-    this.fragementShader = [
-      "uniform sampler2D sphereTexture; // Imposter image of sphere",
-      "uniform mat4 projectionMatrix;",
-      "varying vec3 vColor; // colors associated to vertices; assigned by vertex shader",
-      "//varying vec4 mvPosition;",
-      "varying float vAlpha;",
-      "void main() ",
-      "{",
-      "// what part of the sphere image?",
-      "vec2 uv = vec2(gl_PointCoord.x, 1.0 - gl_PointCoord.y);",
-      "vec4 sphereColors = texture2D(sphereTexture, uv);",
-      "// avoid further computation at invisible corners",
-      "if (sphereColors.a < 0.3) discard;",
-      "if (vAlpha < 0.05) discard;",
-
-      "// calculates a color for the particle",
-      "// gl_FragColor = vec4(vColor, 1.0);",
-      "// sets a white particle texture to desired color",
-      "// gl_FragColor = sqrt(gl_FragColor * texture2D(sphereTexture, uv)) + vec4(0.1, 0.1, 0.1, 0.0);",
-      "// red channel contains colorizable sphere image",
-      "vec3 baseColor = vColor * sphereColors.r;",
-      "// green channel contains (white?) specular highlight",
-      "vec3 highlightColor = baseColor + sphereColors.ggg;",
-      "gl_FragColor = vec4(highlightColor, sphereColors.a * vAlpha);",
-      "// TODO blue channel contains depth offset, but we cannot use gl_FragDepth in webgl?",
-      "#ifdef GL_EXT_frag_depth",
-      "// gl_FragDepthExt = 0.5;",
-      "#endif",
-      "}"
-    ].join("\n");
-
-    this.vertexShaderCone = [
-      "attribute float radius;",
-      "attribute vec3 typeColor;",
-      "// attribute float alpha;",
-      "varying vec3 vColor;",
-      "varying vec2 sphereUv;",
-      "varying float vAlpha;",
-      "void main() ",
-      "{",
-      "   vAlpha = alpha;",
-      "	// TODO - offset cone position for different sphere sizes",
-      "	// TODO - implement depth buffer on Chrome",
-      "	vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);",
-      "	// Expand quadrilateral perpendicular to both view/screen direction and cone axis",
-      "	vec3 cylAxis = (modelViewMatrix * vec4(normal, 0.0)).xyz; // convert cone axis to camera space",
-      "	vec3 sideDir = normalize(cross(vec3(0.0,0.0,-1.0), cylAxis));",
-      "	mvPosition += vec4(radius * sideDir, 0.0);",
-      "	gl_Position = projectionMatrix * mvPosition;",
-      "	// Pass and interpolate color",
-      "	vColor = typeColor;",
-      "	// Texture coordinates",
-      "	sphereUv = uv - vec2(0.5, 0.5); // map from [0,1] range to [-.5,.5], before rotation",
-      '	// If sideDir is "up" on screen, make sure u is positive',
-      "	float q = sideDir.y * sphereUv.y;",
-      "	sphereUv.y = sign(q) * sphereUv.y;",
-      "	// rotate texture coordinates to match cone orientation about z",
-      "	float angle = atan(sideDir.x/sideDir.y);",
-      "	float c = cos(angle);",
-      "	float s = sin(angle);",
-      "	mat2 rotMat = mat2(",
-      "		c, -s, ",
-      "		s,  c);",
-      "	sphereUv = rotMat * sphereUv;",
-      "	sphereUv += vec2(0.5, 0.5); // map back from [-.5,.5] => [0,1]",
-      "}"
-    ].join("\n");
-
-    this.fragmentShaderCone = [
-      "uniform sampler2D sphereTexture; // Imposter image of sphere",
-      "varying vec3 vColor;",
-      "varying vec2 sphereUv;",
-      "varying float vAlpha;",
-      "void main() ",
-      "{",
-      "   if (vAlpha < 0.05) discard;",
-      "	vec4 sphereColors = texture2D(sphereTexture, sphereUv);",
-      "	if (sphereColors.a < 0.3) discard;",
-      "	vec3 baseColor = vColor * sphereColors.r;",
-      "	vec3 highlightColor = baseColor + sphereColors.ggg;",
-      "	gl_FragColor = vec4(highlightColor, sphereColors.a * vAlpha);",
-      "}"
-    ].join("\n");
-
     if (this.effect === "noeffect") this.effect = false;
 
     // set up colors and materials based on color array
