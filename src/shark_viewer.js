@@ -784,7 +784,8 @@ export default class SharkViewer {
 
     // put a camera in the scene
     this.fov = 45;
-    // const cameraPosition = this.calculateCameraPosition(fov);
+    // const boundingBox = this.calculateBoundingBox(this.swc);
+    // const cameraPosition = this.calculateCameraPosition(this.fov, [0,0,0], boundingBox);
     const cameraPosition = 2000;
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
@@ -937,6 +938,12 @@ export default class SharkViewer {
 
   loadNeuron(filename, color, nodes) {
     const neuron = this.createNeuron(nodes, color);
+    const boundingBox = this.calculateBoundingBox(nodes);
+    this.camera.position.set(
+      boundingBox.xmax,
+      boundingBox.ymax,
+      boundingBox.zmax
+    );
 
     neuron.name = filename;
     this.scene.add(neuron);
