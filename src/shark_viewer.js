@@ -3,7 +3,7 @@ import { NODE_PARTICLE_IMAGE, swc_parser } from "./viewer/util";
 const THREE = require("three");
 require("three-obj-loader")(THREE);
 const OrbitControls = require("ndb-three-orbit-controls")(THREE);
-/* 
+
 const vertexShader = [
   "uniform float particleScale;",
   "attribute float radius;",
@@ -161,9 +161,9 @@ const fragmentShaderCone = [
   "#endif",
   "}"
 ].join("\n");
-*/
 
 // original
+/*
 const vertexShader = [
   "uniform float particleScale;",
   "attribute float radius;",
@@ -266,7 +266,7 @@ const fragmentShaderCone = [
   "	gl_FragColor = vec4(highlightColor, sphereColors.a * vAlpha);",
   "}"
 ].join("\n");
-
+*/
 const DEFAULT_POINT_THRESHOLD = 50;
 export default class SharkViewer {
   /* swc neuron json object:
