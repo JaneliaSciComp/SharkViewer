@@ -696,17 +696,21 @@ export default class SharkViewer {
                 nodeColor = new THREE.Color(color);
               }
 
-              let child_radius = cone.child.radius * this.radius_scale_factor;
+              let parentRadius = cone.parent.radius * this.radius_scale_factor;
+              if (this.min_radius && parentRadius < this.min_radius) {
+                parentRadius = this.min_radius;
+              }
 
-              if (this.min_radius && child_radius < this.min_radius) {
-                child_radius = this.min_radius;
+              let childRadius = cone.child.radius * this.radius_scale_factor;
+              if (this.min_radius && childRadius < this.min_radius) {
+                childRadius = this.min_radius;
               }
 
               // vertex 1
               coneAttributes.vertices.value.push(cone.child.vertex.x);
               coneAttributes.vertices.value.push(cone.child.vertex.y);
               coneAttributes.vertices.value.push(cone.child.vertex.z);
-              coneAttributes.radius.value.push(child_radius);
+              coneAttributes.radius.value.push(childRadius);
               coneAttributes.typeColor.value.push(nodeColor.r);
               coneAttributes.typeColor.value.push(nodeColor.g);
               coneAttributes.typeColor.value.push(nodeColor.b);
@@ -722,7 +726,7 @@ export default class SharkViewer {
               coneAttributes.vertices.value.push(cone.child.vertex.x);
               coneAttributes.vertices.value.push(cone.child.vertex.y);
               coneAttributes.vertices.value.push(cone.child.vertex.z);
-              coneAttributes.radius.value.push(child_radius);
+              coneAttributes.radius.value.push(childRadius);
               coneAttributes.typeColor.value.push(nodeColor.r);
               coneAttributes.typeColor.value.push(nodeColor.g);
               coneAttributes.typeColor.value.push(nodeColor.b);
@@ -738,7 +742,7 @@ export default class SharkViewer {
               coneAttributes.vertices.value.push(cone.parent.vertex.x);
               coneAttributes.vertices.value.push(cone.parent.vertex.y);
               coneAttributes.vertices.value.push(cone.parent.vertex.z);
-              coneAttributes.radius.value.push(child_radius);
+              coneAttributes.radius.value.push(parentRadius);
               coneAttributes.typeColor.value.push(nodeColor.r);
               coneAttributes.typeColor.value.push(nodeColor.g);
               coneAttributes.typeColor.value.push(nodeColor.b);
@@ -757,11 +761,6 @@ export default class SharkViewer {
                 nodeColor = new THREE.Color(color);
               }
 
-              let parentRadius = cone.parent.radius * this.radius_scale_factor;
-              if (this.min_radius && parentRadius < this.min_radius) {
-                parentRadius = this.min_radius;
-              }
-
               // vertex 1
               coneAttributes.vertices.value.push(cone.parent.vertex.x);
               coneAttributes.vertices.value.push(cone.parent.vertex.y);
@@ -798,7 +797,7 @@ export default class SharkViewer {
               coneAttributes.vertices.value.push(cone.child.vertex.x);
               coneAttributes.vertices.value.push(cone.child.vertex.y);
               coneAttributes.vertices.value.push(cone.child.vertex.z);
-              coneAttributes.radius.value.push(parentRadius);
+              coneAttributes.radius.value.push(childRadius);
               coneAttributes.typeColor.value.push(nodeColor.r);
               coneAttributes.typeColor.value.push(nodeColor.g);
               coneAttributes.typeColor.value.push(nodeColor.b);
