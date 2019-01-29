@@ -1,5 +1,5 @@
-import SharkViewer from "./shark_viewer";
-import { swc_parser } from "./viewer/util";
+import SharkViewer from "../src/shark_viewer";
+import { swcParser } from "../src/viewer/util";
 
 let mdata;
 function readSwcFile(e) {
@@ -8,7 +8,7 @@ function readSwcFile(e) {
     const r = new FileReader();
     r.onload = function(e2) {
       const swcTxt = e2.target.result;
-      const  swc = swc_parser(swcTxt);
+      const  swc = swcParser(swcTxt);
       if (Object.keys(swc).length > 0) {
         document.getElementById("container").innerHTML = "";
         const s = new SharkViewer({
@@ -32,7 +32,7 @@ window.onload = function() {
   document
     .getElementById("swc_input")
     .addEventListener("change", readSwcFile, false);
-  const swc = swc_parser(document.getElementById("swc").text);
+  const swc = swcParser(document.getElementById("swc").text);
   mdata = JSON.parse(document.getElementById("metadata_swc").text);
   const s = new SharkViewer({
     dom_element: "container",
@@ -42,7 +42,7 @@ window.onload = function() {
   window.s = s;
   s.init();
   s.animate();
-  const swc2 = swc_parser(document.getElementById("swc2").text);
+  const swc2 = swcParser(document.getElementById("swc2").text);
   s.loadNeuron('swc2', null, swc2);
   s.loadNeuron('swc', null, swc);
 };

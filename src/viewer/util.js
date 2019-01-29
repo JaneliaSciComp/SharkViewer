@@ -1,8 +1,8 @@
 // Convert swc file data into json object
-export function swc_parser(swc_file) {
-  //split by lines
-  const swc_ar = swc_file.split("\n");
-  const swc_json = {};
+export function swcParser(swcFile) {
+  // split by lines
+  const swcAr = swcFile.split("\n");
+  const swcJSON = {};
 
   const float = "-?\\d*(?:\\.\\d+)?";
   const pattern = new RegExp(
@@ -20,26 +20,26 @@ export function swc_parser(swc_file) {
     "m"
   );
 
-  swc_ar.forEach(function(e) {
-    //if line is good, put into json
+  swcAr.forEach(e => {
+    // if line is good, put into json
     const match = e.match(pattern);
     if (match) {
-      const id = parseInt(match[1]);
+      const id = parseInt(match[1], 10);
 
-      swc_json[id] = {
+      swcJSON[id] = {
         id,
-        type: parseInt(match[2]),
+        type: parseInt(match[2], 10),
         x: parseFloat(match[3]),
         y: parseFloat(match[4]),
         z: parseFloat(match[5]),
         radius: parseFloat(match[6]),
-        parent: parseInt(match[7])
+        parent: parseInt(match[7], 10)
       };
     }
   });
 
-  //return json
-  return swc_json;
+  // return json
+  return swcJSON;
 }
 
 export const NODE_PARTICLE_IMAGE =

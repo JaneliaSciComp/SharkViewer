@@ -1,4 +1,4 @@
-import { NODE_PARTICLE_IMAGE, swc_parser } from "./viewer/util";
+import { NODE_PARTICLE_IMAGE, swcParser } from "./viewer/util";
 
 const THREE = require("three");
 require("three-obj-loader")(THREE);
