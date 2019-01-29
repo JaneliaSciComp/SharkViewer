@@ -26,10 +26,12 @@
     "prettier": "^1.15.1",
     "rimraf": "^2.6.3",
     "webpack": "^4.25.1",
-    "webpack-cli": "^3.2.1"
+    "webpack-cli": "^3.2.1",
+    "webpack-dev-server": "^3.1.14"
   },
   "scripts": {
-    "test": "npx webpack",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack-dev-server --open",
     "build": "NODE_ENV=production npx babel ./src --out-dir ./dist --ignore '**/*.test.jsx' --ignore '**/*.test.js'",
     "prebuild": "rimraf dist",
     "dev": "NODE_ENV=development npx babel ./src --out-dir ./dist --ignore '**/*.test.jsx' --ignore '**/*.test.js' --source-maps --watch --verbose"

@@ -8,6 +8,9 @@ const cleanPlugin = new CleanWebpackPlugin(['test']);
 module.exports = {
   mode: 'development',
   devtool: 'inline-source-map',
+  devServer: {
+    contentBase: './test'
+  },
   watch: false,
   entry: './test-src/index.js',
   output: {

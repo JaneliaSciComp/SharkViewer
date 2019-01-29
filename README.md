@@ -2,7 +2,9 @@
 
 ![Picture](https://zenodo.org/badge/doi/10.5281/zenodo.10053.png)
 
-##NEW
+# Shark Viewer
+
+## NEW
 09-26-2014 - Synapse Annotations. Load annotations from a separate file with format "x y z\n" for each annotation. You can use annotation\_parser(annotation\_text) to parse it into the format [{'x': x, 'y': y, 'z':z}, {'x': x1, 'y': y1, 'z':z1}, ..., {'x': xn, 'y': yn, 'z':zn}] and load that into the annotation property of SharkViewer.
 
 08-08-2014 - Three.js loader version: html/js/sharkviewer_loader.js
@@ -10,17 +12,19 @@ If you want to use the neuron rendered from SharkViewer in another scene use thi
 
 06-18-2014 - Serverless SharkViewer! Now the html/Shark\_Viewer.html file allows you to load and view your own SWC files without a server. Simply download the repository and open Shark\_Viewer.html in a browser, then use the form to view your own SWC files.  
 
-##DESCRIPTION
+## DESCRIPTION
 SharkViewer is a web-based viewer for SWC neuron files. It is written entirely in JavaScript using Three.js.
 To view SWC format guidelines visit: http://research.mssm.edu/cnic/swc.html
 
-##EXAMPLE
+## EXAMPLE
 http://janeliascicomp.github.io/SharkViewer/
 
-##QUICK START
-1) Open html/Shark\_Viewer.html in a modern browser.
-
-2) Click 'Choose File' button to load a SWC file. 
+## QUICK START
+1. start up a test server
+```zsh
+npm run start
+```
+1. Click 'Choose File' button to load a SWC file.
 
 ## HOW TO RUN
 1) Load javascript files onto page
@@ -117,8 +121,13 @@ annotation_color - color to display annotations
 *Default* 0x111111
 
 
-##Author Information
-SharkViewer was written by Charlotte Weaver (<weaverc10@janelia.hhmi.org>) and Christopher Bruns (<brunsc@janelia.hhmi.org>)
+## Author Information
+SharkViewer was originally written by Charlotte Weaver (<weaverc10@janelia.hhmi.org>) and Christopher Bruns (<brunsc@janelia.hhmi.org>)
+
+## Contributors
+- Patrick Edson
+- Jody Clements 
+- Phillip Hubbard
 
 [![Picture](html/images/hhmi_janelia_transparentbkgrnd.png)](http://www.janelia.org)
 
