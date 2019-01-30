@@ -35,6 +35,7 @@ window.onload = function() {
   const swc = swcParser(document.getElementById("swc").text);
   mdata = JSON.parse(document.getElementById("metadata_swc").text);
   const s = new SharkViewer({
+    animated: false,
     dom_element: "container",
     metadata: mdata,
     centerpoint: [24,18,0]
