@@ -164,6 +164,24 @@ const fragmentShaderCone = [
   "}"
 ].join("\n");
 
+function convertToHexColor(i) {
+  let result = "#000000";
+  if (i >= 0 && i <= 15) {
+    result = `#00000${i.toString(16)}`;
+  } else if (i >= 16 && i <= 255) {
+    result = "#0000" + i.toString(16);
+  } else if (i >= 256 && i <= 4095) {
+    result = "#000" + i.toString(16);
+  } else if (i >= 4096 && i <= 65535) {
+    result = "#00" + i.toString(16);
+  } else if (i >= 65536 && i <= 1048575) {
+    result = "#0" + i.toString(16);
+  } else if (i >= 1048576 && i <= 16777215) {
+    result = "#" + i.toString(16);
+  }
+  return result;
+}
+
 const DEFAULT_POINT_THRESHOLD = 50;
 export default class SharkViewer {
   /* swc neuron json object:
@@ -220,10 +238,12 @@ export default class SharkViewer {
     // anything after the above line can not be set by the caller.
 
     // html element that will receive webgl canvas
-    if (typeof args.dom_element === 'object') {
+    if (typeof args.dom_element === "object") {
       this.dom_element = args.dom_element;
     } else {
-      this.dom_element = document.getElementById(args.dom_element || "container");
+      this.dom_element = document.getElementById(
+        args.dom_element || "container"
+      );
     }
 
     // height of canvas
@@ -302,24 +322,6 @@ export default class SharkViewer {
   }
 
   createMetadataElement(metadata, colors) {
-    function convertToHexColor(i) {
-      let result = "#000000";
-      if (i >= 0 && i <= 15) {
-        result = `#00000${i.toString(16)}`;
-      } else if (i >= 16 && i <= 255) {
-        result = "#0000" + i.toString(16);
-      } else if (i >= 256 && i <= 4095) {
-        result = "#000" + i.toString(16);
-      } else if (i >= 4096 && i <= 65535) {
-        result = "#00" + i.toString(16);
-      } else if (i >= 65536 && i <= 1048575) {
-        result = "#0" + i.toString(16);
-      } else if (i >= 1048576 && i <= 16777215) {
-        result = "#" + i.toString(16);
-      }
-      return result;
-    }
-
     const metadiv = document.createElement("div");
     metadiv.id = "node_key";
     metadiv.style.position = "absolute";
