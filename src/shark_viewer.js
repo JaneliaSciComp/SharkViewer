@@ -220,7 +220,11 @@ export default class SharkViewer {
     // anything after the above line can not be set by the caller.
 
     // html element that will receive webgl canvas
-    this.dom_element = document.getElementById(args.dom_element || "container");
+    if (typeof args.dom_element === 'object') {
+      this.dom_element = args.dom_element;
+    } else {
+      this.dom_element = document.getElementById(args.dom_element || "container");
+    }
 
     // height of canvas
     this.HEIGHT = this.dom_element.clientHeight;
@@ -880,6 +884,11 @@ export default class SharkViewer {
 
     this.trackControls = new OrbitControls(this.camera, this.dom_element);
     this.trackControls.addEventListener("change", this.render.bind(this));
+    this.trackControls.addEventListener("change", () => {
+      // TODO: have a callback here that reports the current position of the
+      // camera. That way we can store it in the state and restore from there.
+      console.log(this);
+    });
 
     this.raycaster.params.Points.threshold = DEFAULT_POINT_THRESHOLD;
   }

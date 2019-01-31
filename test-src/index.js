@@ -1,5 +1,4 @@
-import SharkViewer from "../src/shark_viewer";
-import { swcParser } from "../src/viewer/util";
+import SharkViewer, { swcParser } from "../src/shark_viewer";
 
 let mdata;
 function readSwcFile(e) {
@@ -36,7 +35,7 @@ window.onload = function() {
   mdata = JSON.parse(document.getElementById("metadata_swc").text);
   const s = new SharkViewer({
     animated: false,
-    dom_element: "container",
+    dom_element: document.getElementById('container'),
     metadata: mdata,
     centerpoint: [24,18,0]
   });
