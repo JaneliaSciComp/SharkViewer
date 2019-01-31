@@ -43,6 +43,6 @@ window.onload = function() {
   s.init();
   s.animate();
   const swc2 = swcParser(document.getElementById("swc2").text);
-  s.loadNeuron('swc2', null, swc2);
+  s.loadNeuron('swc2', '#ff0000', swc2);
   s.loadNeuron('swc', null, swc);
 };
