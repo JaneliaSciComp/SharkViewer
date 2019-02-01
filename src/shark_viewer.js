@@ -898,19 +898,13 @@ export default class SharkViewer {
     this.raycaster.params.Points.threshold = DEFAULT_POINT_THRESHOLD;
   }
 
-  addEventHandler(handler) {
-    this.mouseHandler = handler;
-    this.mouseHandler.DomElement = this.dom_element;
-    this.mouseHandler.addListeners();
-    this.mouseHandler.ClickHandler = this.onClick.bind(this);
-
-    this.mouseHandler.ResetHandler = this.onResetView;
+  resetView() {
+    this.trackControls.reset();
+    this.trackControls.update();
   }
 
-  onResetView(r1, r2) {
-    this.trackControls.reset();
-    this.trackControls.rotateLeft(r1);
-    this.trackControls.rotateUp(r2);
+  restoreView(x = 0, y = 0, z = 0) {
+    this.trackControls.object.position.set(x, y, z);
     this.trackControls.update();
   }
 
@@ -932,11 +926,11 @@ export default class SharkViewer {
     const points = intersects
       .filter(o => o.object.type === "Points")
       .filter(o => o.object.userData.materialShader.uniforms.alpha.value > 0.0)
-      .sort((a, b) => {
-        return a.distanceToRay === b.distanceToRay
+      .sort((a, b) =>
+        a.distanceToRay === b.distanceToRay
           ? a.distance - b.distance
-          : a.distanceToRay - b.distanceToRay;
-      });
+          : a.distanceToRay - b.distanceToRay
+      );
 
     if (points.length > 0) {
       const intersectObject = points[0];
@@ -1014,22 +1008,18 @@ export default class SharkViewer {
 
   setNeuronVisible(id, visible) {
     const neuron = this.scene.getObjectByName(id);
-
     if (neuron) {
-      neuron.children.map(c => {
-        if (c.userData.materialShader) {
-          c.userData.materialShader.uniforms.alpha.value = visible ? 1.0 : 0.0;
-        }
-      });
+      neuron.visible = visible;
     }
   }
 
+  // TODO: get this to work with the particle mode
+  // until then comment it out
+  /*
   setNeuronDisplayLevel(id, opacity) {
     const neuron = this.scene.getObjectByName(id);
 
     if (neuron) {
-      // neuron.visible = visible;
-
       neuron.children.map(c => {
         if (c.userData.materialShader) {
           c.userData.materialShader.uniforms.alpha.value = opacity;
@@ -1037,6 +1027,7 @@ export default class SharkViewer {
       });
     }
   }
+  */
 
   loadCompartment(id, geometryFile, color) {
     const loader = new THREE.OBJLoader();
