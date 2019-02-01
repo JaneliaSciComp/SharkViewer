@@ -4,7 +4,7 @@ export { swcParser };
 
 const THREE = require("three");
 require("three-obj-loader")(THREE);
-const OrbitControls = require("ndb-three-orbit-controls")(THREE);
+const OrbitControls = require("three-orbit-controls")(THREE);
 
 const vertexShader = [
   "uniform float particleScale;",
