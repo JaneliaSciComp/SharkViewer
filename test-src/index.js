@@ -37,7 +37,8 @@ window.onload = function() {
     animated: false,
     dom_element: document.getElementById('container'),
     metadata: mdata,
-    centerpoint: [24,18,0]
+    centerpoint: [24,18,0],
+    cameraChangeCallback: (data) => { console.log(data) }
   });
   window.s = s;
   s.init();

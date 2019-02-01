@@ -233,6 +233,7 @@ export default class SharkViewer {
     this.backgroundColor = 0xffffff;
     this.renderer = null;
     this.camera = null;
+    this.cameraChangeCallback = null;
 
     this.setValues(args);
     // anything after the above line can not be set by the caller.
@@ -886,10 +887,12 @@ export default class SharkViewer {
 
     this.trackControls = new OrbitControls(this.camera, this.dom_element);
     this.trackControls.addEventListener("change", this.render.bind(this));
+    // TODO: have a callback here that reports the current position of the
+    // camera. That way we can store it in the state and restore from there.
     this.trackControls.addEventListener("change", () => {
-      // TODO: have a callback here that reports the current position of the
-      // camera. That way we can store it in the state and restore from there.
-      console.log(this);
+      if (this.cameraChangeCallback) {
+        this.cameraChangeCallback(this);
+      }
     });
 
     this.raycaster.params.Points.threshold = DEFAULT_POINT_THRESHOLD;
