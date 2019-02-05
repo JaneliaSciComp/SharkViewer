@@ -853,7 +853,7 @@ export default class SharkViewer {
     this.fov = 45;
     // const boundingBox = this.calculateBoundingBox(this.swc);
     // const cameraPosition = this.calculateCameraPosition(this.fov, [0,0,0], boundingBox);
-    const cameraPosition = 2000;
+    const cameraPosition = 100000;
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
       this.WIDTH / this.HEIGHT,
