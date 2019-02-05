@@ -900,6 +900,8 @@ export default class SharkViewer {
     });
 
     this.raycaster.params.Points.threshold = DEFAULT_POINT_THRESHOLD;
+
+    this.dom_element.addEventListener("click", this.onClick.bind(this), true);
   }
 
   resetView() {
@@ -948,7 +950,7 @@ export default class SharkViewer {
           this.on_toggle_node(tracingId, sampleNumber);
         }
       } else {
-        if (!event.shiftKey && !event.altKey && !event.ctrlKey) {
+        if (event.shiftKey) {
           this.trackControls.target = points[0].point;
         }
 
