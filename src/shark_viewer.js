@@ -182,6 +182,85 @@ function convertToHexColor(i) {
   return result;
 }
 
+function calculateBoundingBox(swcJSON) {
+  const boundingBox = {
+    xmin: Infinity,
+    xmax: -Infinity,
+    ymin: Infinity,
+    ymax: -Infinity,
+    zmin: Infinity,
+    zmax: -Infinity
+  };
+
+  Object.values(swcJSON).forEach(node => {
+    const r = node.radius;
+    if (node.x - r < boundingBox.xmin) {
+      boundingBox.xmin = node.x - r;
+    }
+    if (node.x + r > boundingBox.xmax) {
+      boundingBox.xmax = node.x + r;
+    }
+    if (node.y - r < boundingBox.ymin) {
+      boundingBox.ymin = node.y - r;
+    }
+    if (node.y + r > boundingBox.ymax) {
+      boundingBox.ymax = node.y + r;
+    }
+    if (node.z - r < boundingBox.zmin) {
+      boundingBox.zmin = node.z - r;
+    }
+    if (node.z + r > boundingBox.zmax) {
+      boundingBox.zmax = node.z + r;
+    }
+  });
+
+  return boundingBox;
+}
+function calculateBoundingSphere(swcJSON, boundingBox) {
+  // Similar to:
+  // "An Efficient Bounding Sphere", by Jack Ritter from "Graphics Gems", Academic Press, 1990
+  // https://github.com/erich666/GraphicsGems/blob/master/gems/BoundSphere.c
+
+  // Start with the sphere inscribed in the bounding box.  It may miss some nodes.
+  const rx = (boundingBox.xmax - boundingBox.xmin) / 2;
+  const ry = (boundingBox.ymax - boundingBox.ymin) / 2;
+  const rz = (boundingBox.zmax - boundingBox.zmin) / 2;
+  let radius = Math.min(rx, ry, rz);
+  let center = new THREE.Vector3(boundingBox.xmin + rx, boundingBox.ymin + ry, boundingBox.zmin + rz);
+
+  // Find each node that is outside the current bounding sphere.
+  let radiusSq = radius * radius;
+  Object.values(swcJSON).forEach(node => {
+    const nodeCenter = new THREE.Vector3(node.x, node.y, node.z);
+    const nodeCenterToCenter = new THREE.Vector3();
+    nodeCenterToCenter.subVectors(center, nodeCenter);
+    const distSqNodeCenterToCenter = nodeCenterToCenter.dot(nodeCenterToCenter);
+    // Include the node's radius when checking whether it is outside.
+    if (distSqNodeCenterToCenter + node.radius * node.radius > radiusSq) {
+      // If it is outside, then the new boundingp-sphere radius is the average of the old radius
+      // and the distance from the outside of the node (i.e., include its radius) to the
+      // old bounding-sphere center.
+      const distNodeCenterToCenter = Math.sqrt(distSqNodeCenterToCenter);
+      const newRadius = (radius + (distNodeCenterToCenter + node.radius)) / 2.0;
+      // The new bounding sphere center will be on the line between the node and the old center.
+      const nodeCenterToCenterUnit = nodeCenterToCenter.clone().divideScalar(distNodeCenterToCenter);
+      const nodeCenterToNewCenter = nodeCenterToCenterUnit.clone().multiplyScalar(newRadius - node.radius);
+      center = nodeCenter.clone().add(nodeCenterToNewCenter);
+      radius = newRadius;
+      radiusSq = radius * radius;
+    }
+  });
+
+  return { center, radius };
+}
+
+function calculateCameraPosition(fov, boundingSphere) {
+  const theta = (fov * (Math.PI / 180.0)) / 2.0;
+  const d = boundingSphere.radius / Math.sin(theta);
+  const { center } = boundingSphere;
+  return new THREE.Vector3(center.x, center.y, center.z + d);
+}
+
 const DEFAULT_POINT_THRESHOLD = 50;
 export default class SharkViewer {
   /* swc neuron json object:
@@ -271,54 +350,6 @@ export default class SharkViewer {
       return this.three_colors[node.type];
     }
     return this.three_colors[0];
-  }
-
-  calculateBoundingBox(swcJSON) {
-    const boundingBox = {
-      xmin: Infinity,
-      xmax: -Infinity,
-      ymin: Infinity,
-      ymax: -Infinity,
-      zmin: Infinity,
-      zmax: -Infinity
-    };
-
-    for (const node in swcJSON) {
-      if (swcJSON.hasOwnProperty(node)) {
-        if (swcJSON[node].x < boundingBox.xmin) {
-          boundingBox.xmin = swcJSON[node].x;
-        }
-        if (swcJSON[node].x > boundingBox.xmax) {
-          boundingBox.xmax = swcJSON[node].x;
-        }
-        if (swcJSON[node].y < boundingBox.ymin) {
-          boundingBox.ymin = swcJSON[node].y;
-        }
-        if (swcJSON[node].y > boundingBox.ymax) {
-          boundingBox.ymax = swcJSON[node].y;
-        }
-        if (swcJSON[node].z < boundingBox.zmin) {
-          boundingBox.zmin = swcJSON[node].z;
-        }
-        if (swcJSON[node].z > boundingBox.zmax) {
-          boundingBox.zmax = swcJSON[node].z;
-        }
-      }
-    }
-    return boundingBox;
-  }
-
-  // calculates camera position based on bounding box
-  calculateCameraPosition(fov, center, boundingBox) {
-    const x1 = Math.floor(center[0] - boundingBox.xmin) * 2;
-    const x2 = Math.floor(boundingBox.xmax - center[0]) * 2;
-    const y1 = Math.floor(center[1] - boundingBox.ymin) * 2;
-    const y2 = Math.floor(boundingBox.ymax - center[1]) * 2;
-    const maxBoundingBox = Math.max(x1, x2, y1, y2);
-    // fudge factor 1.15 to ensure whole neuron fits
-    return (
-      (maxBoundingBox / (Math.tan((fov * (Math.PI / 180.0)) / 2) * 2)) * 1.15
-    );
   }
 
   createMetadataElement(metadata, colors) {
@@ -849,8 +880,6 @@ export default class SharkViewer {
 
     // put a camera in the scene
     this.fov = 45;
-    // const boundingBox = this.calculateBoundingBox(this.swc);
-    // const cameraPosition = this.calculateCameraPosition(this.fov, [0,0,0], boundingBox);
     const cameraPosition = 100000;
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
@@ -989,12 +1018,14 @@ export default class SharkViewer {
 
   loadNeuron(filename, color, nodes) {
     const neuron = this.createNeuron(nodes, color);
-    const boundingBox = this.calculateBoundingBox(nodes);
-    this.camera.position.set(
-      boundingBox.xmax,
-      boundingBox.ymax,
-      boundingBox.zmax
-    );
+    const boundingBox = calculateBoundingBox(nodes);
+    const boundingSphere = calculateBoundingSphere(nodes, boundingBox);
+    const target = boundingSphere.center;
+    const position = calculateCameraPosition(this.fov, boundingSphere);
+    this.camera.position.set(position.x, position.y, position.z);
+    this.trackControls.update();
+    this.trackControls.target.set(target.x, target.y, target.z);
+
     neuron.name = filename;
     this.scene.add(neuron);
   }
