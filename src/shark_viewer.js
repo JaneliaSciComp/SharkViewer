@@ -222,6 +222,7 @@ export default class SharkViewer {
     this.show_stats = false;
     this.animated = false;
 
+    this.showAxes = false;
     this.show_cones = true;
     this.brainboundingbox = null;
     this.last_anim_timestamp = null;
@@ -860,8 +861,10 @@ export default class SharkViewer {
 
     this.camera.position.z = cameraPosition;
 
-    // this.axes = buildAxes(10000);
-    // this.scene.add(this.axes);
+    if (this.showAxes) {
+      this.axes = new THREE.AxisHelper(this.showAxes);
+      this.scene.add(this.axes);
+    }
 
     if (this.flip === true) {
       this.camera.up.setY(-1);
