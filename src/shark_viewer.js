@@ -215,7 +215,6 @@ export default class SharkViewer {
     ];
     this.radius_scale_factor = 1;
     this.metadata = false;
-    this.centerpoint = null;
     this.compartment_path = "allen_horta/obj/";
     this.on_select_node = null;
     this.on_toggle_node = null;
@@ -995,16 +994,8 @@ export default class SharkViewer {
       boundingBox.ymax,
       boundingBox.zmax
     );
-
     neuron.name = filename;
     this.scene.add(neuron);
-    if (this.centerpoint !== null) {
-      neuron.position.set(
-        -this.centerpoint[0],
-        -this.centerpoint[1],
-        -this.centerpoint[2]
-      );
-    }
   }
 
   unloadNeuron(filename) {
@@ -1083,13 +1074,6 @@ export default class SharkViewer {
 
       object.name = id;
 
-      if (that.centerpoint !== null) {
-        object.position.set(
-          -that.centerpoint[0],
-          -that.centerpoint[1],
-          -that.centerpoint[2]
-        );
-      }
       that.scene.add(object);
     });
   }
