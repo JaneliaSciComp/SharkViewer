@@ -1011,20 +1011,20 @@ export default class SharkViewer {
   }
 
   // TODO: get this to work with the particle mode
-  // until then comment it out
-  /*
-  setNeuronDisplayLevel(id, opacity) {
-    const neuron = this.scene.getObjectByName(id);
 
-    if (neuron) {
-      neuron.children.map(c => {
-        if (c.userData.materialShader) {
-          c.userData.materialShader.uniforms.alpha.value = opacity;
-        }
-      });
+  setNeuronDisplayLevel(id, opacity) {
+    if (this.mode !== 'particle') {
+      const neuron = this.scene.getObjectByName(id);
+
+      if (neuron) {
+        neuron.children.forEach(child => {
+          if (child.userData.materialShader) {
+            child.userData.materialShader.uniforms.alpha.value = opacity;
+          }
+        });
+      }
     }
   }
-  */
 
   loadCompartment(id, geometryFile, color) {
     const loader = new THREE.OBJLoader();
