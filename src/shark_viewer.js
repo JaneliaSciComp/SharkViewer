@@ -6,6 +6,8 @@ const THREE = require("three");
 require("three-obj-loader")(THREE);
 const OrbitControls = require("three-orbit-controls")(THREE);
 
+const DEFAULT_POINT_THRESHOLD = 50;
+
 const vertexShader = [
   "uniform float particleScale;",
   "attribute float radius;",
@@ -169,15 +171,15 @@ function convertToHexColor(i) {
   if (i >= 0 && i <= 15) {
     result = `#00000${i.toString(16)}`;
   } else if (i >= 16 && i <= 255) {
-    result = "#0000" + i.toString(16);
+    result = `#0000${i.toString(16)}`;
   } else if (i >= 256 && i <= 4095) {
-    result = "#000" + i.toString(16);
+    result = `#000${i.toString(16)}`;
   } else if (i >= 4096 && i <= 65535) {
-    result = "#00" + i.toString(16);
+    result = `#00${i.toString(16)}`;
   } else if (i >= 65536 && i <= 1048575) {
-    result = "#0" + i.toString(16);
+    result = `#0${i.toString(16)}`;
   } else if (i >= 1048576 && i <= 16777215) {
-    result = "#" + i.toString(16);
+    result = `#${i.toString(16)}`;
   }
   return result;
 }
@@ -216,6 +218,7 @@ function calculateBoundingBox(swcJSON) {
 
   return boundingBox;
 }
+
 function calculateBoundingSphere(swcJSON, boundingBox) {
   // Similar to:
   // "An Efficient Bounding Sphere", by Jack Ritter from "Graphics Gems", Academic Press, 1990
@@ -226,7 +229,11 @@ function calculateBoundingSphere(swcJSON, boundingBox) {
   const ry = (boundingBox.ymax - boundingBox.ymin) / 2;
   const rz = (boundingBox.zmax - boundingBox.zmin) / 2;
   let radius = Math.min(rx, ry, rz);
-  let center = new THREE.Vector3(boundingBox.xmin + rx, boundingBox.ymin + ry, boundingBox.zmin + rz);
+  let center = new THREE.Vector3(
+    boundingBox.xmin + rx,
+    boundingBox.ymin + ry,
+    boundingBox.zmin + rz
+  );
 
   // Find each node that is outside the current bounding sphere.
   let radiusSq = radius * radius;
@@ -243,8 +250,12 @@ function calculateBoundingSphere(swcJSON, boundingBox) {
       const distNodeCenterToCenter = Math.sqrt(distSqNodeCenterToCenter);
       const newRadius = (radius + (distNodeCenterToCenter + node.radius)) / 2.0;
       // The new bounding sphere center will be on the line between the node and the old center.
-      const nodeCenterToCenterUnit = nodeCenterToCenter.clone().divideScalar(distNodeCenterToCenter);
-      const nodeCenterToNewCenter = nodeCenterToCenterUnit.clone().multiplyScalar(newRadius - node.radius);
+      const nodeCenterToCenterUnit = nodeCenterToCenter
+        .clone()
+        .divideScalar(distNodeCenterToCenter);
+      const nodeCenterToNewCenter = nodeCenterToCenterUnit
+        .clone()
+        .multiplyScalar(newRadius - node.radius);
       center = nodeCenter.clone().add(nodeCenterToNewCenter);
       radius = newRadius;
       radiusSq = radius * radius;
@@ -261,7 +272,49 @@ function calculateCameraPosition(fov, boundingSphere) {
   return new THREE.Vector3(center.x, center.y, center.z + d);
 }
 
-const DEFAULT_POINT_THRESHOLD = 50;
+function applySemiTransparentShader(object, color) {
+  object.traverse(child => {
+    child.material = new THREE.ShaderMaterial({
+      uniforms: {
+        color: { type: "c", value: new THREE.Color(`${color}`) }
+      },
+      vertexShader: `
+        #line 585
+        varying vec3 normal_in_camera;
+        varying vec3 view_direction;
+
+        void main() {
+          vec4 pos_in_camera = modelViewMatrix * vec4(position, 1.0);
+          gl_Position = projectionMatrix * pos_in_camera;
+          normal_in_camera = normalize(mat3(modelViewMatrix) * normal);
+          view_direction = normalize(pos_in_camera.xyz);
+        }
+      `,
+      fragmentShader: `
+        #line 597
+        uniform vec3 color;
+        varying vec3 normal_in_camera;
+        varying vec3 view_direction;
+
+        void main() {
+          // Make edges more opaque than center
+          float edginess = 1.0 - abs(dot(normal_in_camera, view_direction));
+          float opacity = clamp(edginess - 0.30, 0.0, 0.5);
+          // Darken compartment at the very edge
+          float blackness = pow(edginess, 4.0) - 0.3;
+          vec3 c = mix(color, vec3(0,0,0), blackness);
+          gl_FragColor = vec4(c, opacity);
+        }
+      `,
+      transparent: true,
+      depthTest: true,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+  });
+  return object;
+}
+
 export default class SharkViewer {
   /* swc neuron json object:
    *{
@@ -298,6 +351,7 @@ export default class SharkViewer {
     this.on_toggle_node = null;
     this.show_stats = false;
     this.animated = false;
+    this.three = THREE;
 
     this.showAxes = false;
     this.show_cones = true;
@@ -1045,7 +1099,7 @@ export default class SharkViewer {
   // TODO: get this to work with the particle mode
 
   setNeuronDisplayLevel(id, opacity) {
-    if (this.mode !== 'particle') {
+    if (this.mode !== "particle") {
       const neuron = this.scene.getObjectByName(id);
 
       if (neuron) {
@@ -1060,103 +1114,32 @@ export default class SharkViewer {
 
   loadCompartment(id, color, geometryData) {
     const loader = new THREE.OBJLoader();
-    const parsed = loader.parse(geometryData);
-
-    parsed.traverse(child => {
-      child.material = new THREE.ShaderMaterial({
-        uniforms: {
-          color: { type: "c", value: new THREE.Color(`${color}`) }
-        },
-        vertexShader: `
-          #line 585
-          varying vec3 normal_in_camera;
-          varying vec3 view_direction;
-
-          void main() {
-            vec4 pos_in_camera = modelViewMatrix * vec4(position, 1.0);
-            gl_Position = projectionMatrix * pos_in_camera;
-            normal_in_camera = normalize(mat3(modelViewMatrix) * normal);
-            view_direction = normalize(pos_in_camera.xyz);
-          }
-        `,
-        fragmentShader: `
-          #line 597
-          uniform vec3 color;
-          varying vec3 normal_in_camera;
-          varying vec3 view_direction;
-
-          void main() {
-            // Make edges more opaque than center
-            float edginess = 1.0 - abs(dot(normal_in_camera, view_direction));
-            float opacity = clamp(edginess - 0.30, 0.0, 0.5);
-            // Darken compartment at the very edge
-            float blackness = pow(edginess, 4.0) - 0.3;
-            vec3 c = mix(color, vec3(0,0,0), blackness);
-            gl_FragColor = vec4(c, opacity);
-          }
-        `,
-        transparent: true,
-        depthTest: true,
-        depthWrite: false,
-        side: THREE.DoubleSide
-      });
-    });
-
+    let parsed = loader.parse(geometryData);
+    parsed = applySemiTransparentShader(parsed, color);
     parsed.name = id;
 
     this.scene.add(parsed);
+    this.centerCameraAroundCompartment(parsed);
   }
 
   loadCompartmentFromURL(id, color, URL) {
     const loader = new THREE.OBJLoader();
 
-    const that = this;
-
     loader.load(URL, object => {
-      object.traverse(child => {
-        child.material = new THREE.ShaderMaterial({
-          uniforms: {
-            color: { type: "c", value: new THREE.Color(`#${color}`) }
-          },
-          vertexShader: `
-					#line 585
-					varying vec3 normal_in_camera;
-					varying vec3 view_direction;
-
-					void main() {
-						vec4 pos_in_camera = modelViewMatrix * vec4(position, 1.0);
-						gl_Position = projectionMatrix * pos_in_camera;
-						normal_in_camera = normalize(mat3(modelViewMatrix) * normal);
-						view_direction = normalize(pos_in_camera.xyz);
-					}
-				`,
-          fragmentShader: `
-                	#line 597
-                	uniform vec3 color;
-					varying vec3 normal_in_camera;
-					varying vec3 view_direction;
-
-					void main() {
-						// Make edges more opaque than center
-						float edginess = 1.0 - abs(dot(normal_in_camera, view_direction));
-						float opacity = clamp(edginess - 0.30, 0.0, 0.5);
-						// Darken compartment at the very edge
-						float blackness = pow(edginess, 4.0) - 0.3;
-						vec3 c = mix(color, vec3(0,0,0), blackness);
-						gl_FragColor = vec4(c, opacity);
-					}
-				`,
-          transparent: true,
-          depthTest: true,
-          depthWrite: false,
-          side: THREE.DoubleSide
-        });
-      });
-
+      object = applySemiTransparentShader(object, color);
       object.name = id;
 
-      that.scene.add(object);
+      this.scene.add(object);
+      this.centerCameraAroundCompartment(object);
     });
+  }
+
+  centerCameraAroundCompartment(compartment) {
+    const boundingBox = new THREE.Box3().setFromObject(compartment);
+    this.camera.position.set(boundingBox.min.x - 10, boundingBox.min.y - 10, boundingBox.min.z - 10);
+    this.trackControls.update();
+    const boxCenter = boundingBox.getCenter();
+    this.trackControls.target = boxCenter;
   }
 
   unloadCompartment(id) {
