@@ -538,7 +538,7 @@ export default class SharkViewer {
         uniforms: customUniforms,
         vertexShader: vertexShader,
         fragmentShader: fragmentShader,
-        transparent: true,
+        transparent: true
         // alphaTest: 0.5 // if having transparency issues, try including: alphaTest: 0.5,
       });
       material.extensions.fragDepth = true;
@@ -830,7 +830,10 @@ export default class SharkViewer {
     for (const color in this.colors) {
       if (this.colors.hasOwnProperty(color)) {
         this.three_materials.push(
-          new THREE.MeshBasicMaterial({ color: this.colors[color], wireframe: false })
+          new THREE.MeshBasicMaterial({
+            color: this.colors[color],
+            wireframe: false
+          })
         );
       }
     }
