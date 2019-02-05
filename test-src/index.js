@@ -23,10 +23,27 @@ function readSwcFile(e) {
   }
 }
 
-window.onload = function() {
+function readObjFile(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const objText = event.target.result;
+      s.loadCompartment('foo', '#ff0000', objText);
+      s.render();
+    };
+    reader.readAsText(file);
+  }
+}
+
+
+window.onload = () => {
   document
     .getElementById("swc_input")
     .addEventListener("change", readSwcFile, false);
+  document
+    .getElementById("obj_input")
+    .addEventListener("change", readObjFile, false);
   const swc = swcParser(document.getElementById("swc").text);
   mdata = JSON.parse(document.getElementById("metadata_swc").text);
   s = new SharkViewer({
