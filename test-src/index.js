@@ -38,7 +38,7 @@ window.onload = function() {
     mode: 'particle',
     dom_element: document.getElementById('container'),
     metadata: mdata,
-    centerpoint: [24,18,0],
+    showAxes: 10000,
     cameraChangeCallback: (data) => { console.log(data) }
   });
   window.s = s;
