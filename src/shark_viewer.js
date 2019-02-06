@@ -997,6 +997,8 @@ export default class SharkViewer {
     this.trackControls.update();
   }
 
+  // TODO: alt click should target meshes and center the orbit controls
+  // on them if intersected.
   onClick(event) {
     const rect = this.dom_element.getBoundingClientRect();
 
