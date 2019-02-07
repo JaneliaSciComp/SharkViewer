@@ -619,8 +619,8 @@ export default class SharkViewer {
 
       material = new THREE.ShaderMaterial({
         uniforms: customUniforms,
-        vertexShader: vertexShader,
-        fragmentShader: fragmentShader,
+        vertexShader,
+        fragmentShader,
         transparent: true
         // alphaTest: 0.5 // if having transparency issues, try including: alphaTest: 0.5,
       });
