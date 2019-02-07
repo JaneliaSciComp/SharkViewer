@@ -1078,15 +1078,18 @@ export default class SharkViewer {
     this.renderer.render(this.scene, this.camera);
   }
 
-  loadNeuron(filename, color, nodes) {
+  loadNeuron(filename, color, nodes, updateCamera=true) {
     const neuron = this.createNeuron(nodes, color);
     const boundingBox = calculateBoundingBox(nodes);
     const boundingSphere = calculateBoundingSphere(nodes, boundingBox);
     const target = boundingSphere.center;
     const position = calculateCameraPosition(this.fov, boundingSphere);
-    this.camera.position.set(position.x, position.y, position.z);
-    this.trackControls.update();
-    this.trackControls.target.set(target.x, target.y, target.z);
+
+    if (updateCamera) {
+      this.camera.position.set(position.x, position.y, position.z);
+      this.trackControls.update();
+      this.trackControls.target.set(target.x, target.y, target.z);
+    }
 
     neuron.name = filename;
     this.scene.add(neuron);
@@ -1120,17 +1123,19 @@ export default class SharkViewer {
     }
   }
 
-  loadCompartment(id, color, geometryData) {
+  loadCompartment(id, color, geometryData, updateCamera=true) {
     const loader = new THREE.OBJLoader();
     let parsed = loader.parse(geometryData);
     parsed = applySemiTransparentShader(parsed, color);
     parsed.name = id;
 
     this.scene.add(parsed);
-    this.centerCameraAroundCompartment(parsed);
+    if (updateCamera) {
+      this.centerCameraAroundCompartment(parsed);
+    }
   }
 
-  loadCompartmentFromURL(id, color, URL) {
+  loadCompartmentFromURL(id, color, URL, updateCamera=true) {
     const loader = new THREE.OBJLoader();
 
     loader.load(URL, object => {
@@ -1138,7 +1143,9 @@ export default class SharkViewer {
       object.name = id;
 
       this.scene.add(object);
-      this.centerCameraAroundCompartment(object);
+      if (updateCamera) {
+        this.centerCameraAroundCompartment(object);
+      }
     });
   }
 
