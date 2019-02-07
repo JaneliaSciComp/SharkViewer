@@ -978,7 +978,8 @@ export default class SharkViewer {
     // camera. That way we can store it in the state and restore from there.
     this.trackControls.addEventListener("change", () => {
       if (this.cameraChangeCallback) {
-        this.cameraChangeCallback(this);
+        const { position: pos } = this.camera;
+        this.cameraChangeCallback({ x: pos.x, y: pos.y, z: pos.z });
       }
     });
 
