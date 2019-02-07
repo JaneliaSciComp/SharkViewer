@@ -988,6 +988,11 @@ export default class SharkViewer {
     this.dom_element.addEventListener("click", this.onClick.bind(this), true);
   }
 
+  cameraCoords() {
+    const { position: pos } = this.camera;
+    return { x: pos.x, y: pos.y, z: pos.z };
+  }
+
   resetView() {
     this.trackControls.reset();
     this.trackControls.update();
