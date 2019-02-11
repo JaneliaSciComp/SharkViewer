@@ -1,6 +1,6 @@
-![Picture](html/images/SharkLogo.png)
+![SharkLogo](old/images/SharkLogo.png)
 
-![Picture](https://zenodo.org/badge/doi/10.5281/zenodo.10053.png)
+![Badge](https://zenodo.org/badge/doi/10.5281/zenodo.10053.png)
 
 # Shark Viewer
 
@@ -194,7 +194,7 @@ SharkViewer was originally written by Charlotte Weaver (<weaverc10@janelia.hhmi.
 - Jody Clements
 - Phillip Hubbard
 
-[![Janelia Research Campus](html/images/hhmi_janelia_transparentbkgrnd.png)](http://www.janelia.org)
+[![Janelia Research Campus](old/images/hhmi_janelia_transparentbkgrnd.png)](http://www.janelia.org)
 
 [Scientific Computing](http://www.janelia.org/research-resources/computing-resources)
 
