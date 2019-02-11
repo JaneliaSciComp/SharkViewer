@@ -1,25 +1,20 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const path = require('path');
-
-
-const cleanPlugin = new CleanWebpackPlugin(['test']);
 
 module.exports = {
   mode: 'development',
   devtool: 'inline-source-map',
+  // devtool: 'source-map',
   devServer: {
-    contentBase: './test'
+    contentBase: './lib',
+  },
+  externals: {
+    three: 'THREE',
   },
   watch: false,
-  entry: './test-src/index.js',
+  entry: './src/shark_viewer.js',
   output: {
-    path: path.resolve(__dirname, 'test')
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: 'test-src/index.html'
-    }),
-    cleanPlugin
-  ]
+    filename: 'shark_viewer.js',
+    path: path.resolve(__dirname, 'lib'),
+    library: 'sharkViewer'
+  }
 };
