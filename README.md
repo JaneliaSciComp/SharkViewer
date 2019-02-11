@@ -161,7 +161,7 @@ swc json object: {
         x: <x position of node (float)>,
         y: <y position of node (float)>,
         z: <z position of node (float)>,
-        parent: <id number of node's parent (-1 if no parent)>,
+        parent: <id number of node parent (-1 if no parent)>,
         radius: <radius of node (float)>,
     }
 }
