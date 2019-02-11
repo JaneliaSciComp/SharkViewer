@@ -993,13 +993,21 @@ export default class SharkViewer {
     return { x: pos.x, y: pos.y, z: pos.z };
   }
 
+  cameraTarget() {
+    const { target } = this.trackControls;
+    return {x: target.x, y: target.y, z: target.z };
+  }
+
   resetView() {
     this.trackControls.reset();
     this.trackControls.update();
   }
 
-  restoreView(x = 0, y = 0, z = 0) {
+  restoreView(x = 0, y = 0, z = 0, target) {
     this.trackControls.object.position.set(x, y, z);
+    if (target) {
+      this.trackControls.target.set(target.x, target.y, target.z);
+    }
     this.trackControls.update();
   }
 

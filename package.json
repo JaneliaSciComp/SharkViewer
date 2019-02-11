@@ -36,7 +36,8 @@
     "build": "NODE_ENV=production npx babel ./src --out-dir ./dist --ignore '**/*.test.jsx' --ignore '**/*.test.js' && npx webpack --config webpack.prod.config.js",
     "prebuild": "rimraf dist",
     "dev": "NODE_ENV=development npx babel ./src --out-dir ./dist --ignore '**/*.test.jsx' --ignore '**/*.test.js' --source-maps && npx webpack",
-    "dev-watch": "NODE_ENV=development npx babel ./src --out-dir ./dist --ignore '**/*.test.jsx' --ignore '**/*.test.js' --source-maps --watch --verbose"
+    "dev-watch": "NODE_ENV=development npx babel ./src --out-dir ./dist --ignore '**/*.test.jsx' --ignore '**/*.test.js' --source-maps --watch --verbose",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
