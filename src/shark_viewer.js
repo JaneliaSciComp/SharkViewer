@@ -1147,12 +1147,14 @@ export default class SharkViewer {
     const loader = new THREE.OBJLoader();
 
     loader.load(URL, object => {
-      object = applySemiTransparentShader(object, color);
-      object.name = id;
-
-      this.scene.add(object);
-      if (updateCamera) {
-        this.centerCameraAroundCompartment(object);
+      const exists = this.scene.getObjectByName(id);
+      if (!exists) {
+        object = applySemiTransparentShader(object, color);
+        object.name = id;
+        this.scene.add(object);
+        if (updateCamera) {
+          this.centerCameraAroundCompartment(object);
+        }
       }
     });
   }
