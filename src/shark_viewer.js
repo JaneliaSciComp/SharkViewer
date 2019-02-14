@@ -28,7 +28,6 @@ const vertexShader = [
 ].join("\n");
 
 const fragmentShader = [
-  "#extension GL_EXT_frag_depth : enable",
   "uniform sampler2D sphereTexture; // Imposter image of sphere",
   "uniform mat4 projectionMatrix;",
   "varying vec3 vColor; // colors associated to vertices; assigned by vertex shader",
@@ -64,7 +63,6 @@ const fragmentShader = [
 ].join("\n");
 
 const fragmentShaderAnnotation = [
-  "#extension GL_EXT_frag_depth : enable",
   "uniform sampler2D sphereTexture; // Imposter image of sphere",
   "uniform mat4 projectionMatrix;",
   "varying vec3 vColor; // colors associated to vertices; assigned by vertex shader",
@@ -140,7 +138,6 @@ const vertexShaderCone = [
 ].join("\n");
 
 const fragmentShaderCone = [
-  "#extension GL_EXT_frag_depth : enable",
   "uniform sampler2D sphereTexture; // Imposter image of sphere",
   "uniform mat4 projectionMatrix;",
   "varying vec3 vColor;",
@@ -835,6 +832,8 @@ export default class SharkViewer {
           alphaTest: 0.5 // if having transparency issues, try including: alphaTest: 0.5,
         });
 
+        coneMaterial.extensions.fragDepth = true;
+
         const coneMesh = new THREE.Mesh(coneGeom, coneMaterial);
 
         coneMaterial.onBeforeCompile = function(shader) {
@@ -1165,6 +1164,7 @@ export default class SharkViewer {
     this.trackControls.update();
     const boxCenter = boundingBox.getCenter();
     this.trackControls.target = boxCenter;
+    this.render();
   }
 
   unloadCompartment(id) {
