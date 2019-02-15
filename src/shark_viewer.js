@@ -1140,6 +1140,8 @@ export default class SharkViewer {
     if (updateCamera) {
       this.centerCameraAroundCompartment(parsed);
     }
+    this.trackControls.update();
+    this.render();
   }
 
   loadCompartmentFromURL(id, color, URL, updateCamera=true) {
