@@ -1057,7 +1057,7 @@ export default class SharkViewer {
             intersectObject.object.userData.indexLookup[intersectObject.index];
           const tracingId = intersectObject.object.parent.name;
 
-          this.on_select_node(tracingId, sampleNumber, event);
+          this.on_select_node(tracingId, sampleNumber, event, points[0].point);
         }
       }
     }
