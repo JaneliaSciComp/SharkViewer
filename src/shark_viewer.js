@@ -382,6 +382,7 @@ export default class SharkViewer {
     this.WIDTH = this.dom_element.clientWidth;
   }
 
+  // sets up user specified configuration
   setValues(values) {
     if (values !== undefined) {
       Object.keys(values).forEach(key => {
