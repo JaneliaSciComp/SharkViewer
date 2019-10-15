@@ -312,6 +312,50 @@ function applySemiTransparentShader(object, color) {
   return object;
 }
 
+// generates particle vertices
+function generateParticle(node) {
+  return new THREE.Vector3(node.x, node.y, node.z);
+}
+
+// generates skeleton vertices
+function generateSkeleton(node, nodeParent) {
+  const vertex = new THREE.Vector3(node.x, node.y, node.z);
+  const vertexParent = new THREE.Vector3(
+    nodeParent.x,
+    nodeParent.y,
+    nodeParent.z
+  );
+  return {
+    child: vertex,
+    parent: vertexParent
+  };
+}
+
+function createMetadataElement(metadata, colors) {
+  const metadiv = document.createElement("div");
+  metadiv.id = "node_key";
+  metadiv.style.position = "absolute";
+  metadiv.style.top = "0px";
+  metadiv.style.right = "10px";
+  metadiv.style.border = "solid 1px #aaaaaa";
+  metadiv.style.borderRadius = "5px";
+  metadiv.style.padding = "2px";
+
+  let toinnerhtml = "";
+  metadata.forEach(m => {
+    const mtype = parseInt(m.type, 10);
+    const threeColor = mtype < colors.length ? colors[mtype] : colors[0];
+    let cssColor = threeColor;
+    if (typeof threeColor !== "string")
+      cssColor = convertToHexColor(threeColor);
+    toinnerhtml += `<div><span style='height:10px;width:10px;background:${cssColor};`;
+    toinnerhtml += `display:inline-block;'></span> : ${m.label}</div>`;
+  });
+  metadiv.innerHTML = toinnerhtml;
+  return metadiv;
+}
+
+
 export default class SharkViewer {
   /* swc neuron json object:
    *{
@@ -404,50 +448,9 @@ export default class SharkViewer {
     return this.three_colors[0];
   }
 
-  static createMetadataElement(metadata, colors) {
-    const metadiv = document.createElement("div");
-    metadiv.id = "node_key";
-    metadiv.style.position = "absolute";
-    metadiv.style.top = "0px";
-    metadiv.style.right = "10px";
-    metadiv.style.border = "solid 1px #aaaaaa";
-    metadiv.style.borderRadius = "5px";
-    metadiv.style.padding = "2px";
+  
 
-    let toinnerhtml = "";
-    metadata.forEach(m => {
-      const mtype = parseInt(m.type, 10);
-      const threeColor = mtype < colors.length ? colors[mtype] : colors[0];
-      let cssColor = threeColor;
-      if (typeof threeColor !== "string")
-        cssColor = convertToHexColor(threeColor);
-      toinnerhtml += `<div><span style='height:10px;width:10px;background:${cssColor};`;
-      toinnerhtml += `display:inline-block;'></span> : ${m.label}</div>`;
-    });
-    metadiv.innerHTML = toinnerhtml;
-    return metadiv;
-  }
-
-  // generates particle vertices
-  static generateParticle(node) {
-    return new THREE.Vector3(node.x, node.y, node.z);
-  }
-
-  // generates skeleton vertices
-  static generateSkeleton(node, nodeParent) {
-    const vertex = new THREE.Vector3(node.x, node.y, node.z);
-    const vertexParent = new THREE.Vector3(
-      nodeParent.x,
-      nodeParent.y,
-      nodeParent.z
-    );
-    return {
-      child: vertex,
-      parent: vertexParent
-    };
-  }
-
-  // generates sphere mesh
+    // generates sphere mesh
   generateSphere(node) {
     const sphereMaterial = this.three_materials[node.type];
     const r1 = node.radius || 0.01;
@@ -577,7 +580,7 @@ export default class SharkViewer {
           nodeColor = new THREE.Color(color);
         }
 
-        const particleVertex = this.generateParticle(swcJSON[node]);
+        const particleVertex = generateParticle(swcJSON[node]);
 
         let radius = swcJSON[node].radius * this.radius_scale_factor;
 
@@ -869,7 +872,7 @@ export default class SharkViewer {
       geometry = new THREE.Geometry();
       Object.keys(swcJSON).forEach(node => {
         if (swcJSON[node].parent !== -1) {
-          const vertices = this.generateSkeleton(
+          const vertices = generateSkeleton(
             swcJSON[node],
             swcJSON[swcJSON[node].parent]
           );
@@ -949,7 +952,7 @@ export default class SharkViewer {
     this.scene.add(light);
 
     if (this.metadata) {
-      const mElement = this.createMetadataElement(this.metadata, this.colors);
+      const mElement = createMetadataElement(this.metadata, this.colors);
       this.dom_element.appendChild(mElement);
     }
 
