@@ -407,6 +407,7 @@ export default class SharkViewer {
     this.renderer = null;
     this.camera = null;
     this.cameraChangeCallback = null;
+    this.onTop = false;
 
     this.setValues(args);
     // anything after the above line can not be set by the caller.
@@ -913,6 +914,9 @@ export default class SharkViewer {
     this.renderer.setSize(this.WIDTH, this.HEIGHT);
     this.dom_element.appendChild(this.renderer.domElement);
 
+    // to let on-top rendering work
+    this.renderer.autoClear = false;
+
     // create a scene
     this.scene = new THREE.Scene();
 
@@ -925,7 +929,6 @@ export default class SharkViewer {
       1,
       cameraPosition
     );
-    this.scene.add(this.camera);
 
     this.camera.position.z = cameraPosition;
 
@@ -941,15 +944,8 @@ export default class SharkViewer {
     const neuron = this.createNeuron(this.swc);
     this.scene.add(neuron);
 
-    // Lights
-    // doesn't actually work with any of the current shaders
-    let light = new THREE.DirectionalLight(0xffffff);
-    light.position.set(0, 0, 10000);
-    this.scene.add(light);
-
-    light = new THREE.DirectionalLight(0xffffff);
-    light.position.set(0, 0, -10000);
-    this.scene.add(light);
+    // for elements that may be rendered on top
+    this.sceneOnTopable = new THREE.Scene();
 
     if (this.metadata) {
       const mElement = createMetadataElement(this.metadata, this.colors);
@@ -1008,7 +1004,7 @@ export default class SharkViewer {
     this.raycaster.setFromCamera(mouse, this.camera);
 
     const intersects = this.raycaster.intersectObjects(
-      this.scene.children,
+      [].concat(this.scene.children, this.sceneOnTopable.children),
       true
     );
 
@@ -1067,10 +1063,20 @@ export default class SharkViewer {
 
   // render the scene
   render() {
+    this.renderer.clear();
     this.renderer.render(this.scene, this.camera);
+    
+    if (this.onTop) {
+      this.renderer.clearDepth();
+    }
+    
+    this.renderer.render(this.sceneOnTopable, this.camera);
   }
 
-  loadNeuron(filename, color, nodes, updateCamera=true) {
+  // onTopable=true means that setValues({ onTop: true }) will make
+  // the neuron be rendered on top of (i.e., not occluded by) other neurons 
+  // that had onTopable=false
+  loadNeuron(filename, color, nodes, updateCamera=true, onTopable=false) {
     const neuron = this.createNeuron(nodes, color);
     const boundingBox = calculateBoundingBox(nodes);
     const boundingSphere = calculateBoundingSphere(nodes, boundingBox);
@@ -1084,16 +1090,26 @@ export default class SharkViewer {
     }
 
     neuron.name = filename;
-    this.scene.add(neuron);
+    const scene = onTopable ? this.sceneOnTopable : this.scene;
+    scene.add(neuron)
   }
 
-  unloadNeuron(filename) {
-    const neuron = this.scene.getObjectByName(filename);
-    this.scene.remove(neuron);
+  // use onTopable=true to correspond to loadNeuron(..., onTopable=true)
+  neuronLoaded(filename, onTopable=false) {
+    const scene = onTopable ? this.sceneOnTopable : this.scene;
+    return (scene.getObjectByName(filename) !== undefined);
   }
 
-  setNeuronVisible(id, visible) {
-    const neuron = this.scene.getObjectByName(id);
+  // use onTopable=true to correspond to loadNeuron(..., onTopable=true)
+  unloadNeuron(filename, onTopable=false) {
+    const scene = onTopable ? this.sceneOnTopable : this.scene;
+    const neuron = scene.getObjectByName(filename);
+    scene.remove(neuron);
+  }
+
+  setNeuronVisible(id, visible, onTopable=false) {
+    const scene = onTopable ? this.sceneOnTopable : this.scene;
+    const neuron = scene.getObjectByName(id);
     if (neuron) {
       neuron.visible = visible;
     }
@@ -1143,6 +1159,10 @@ export default class SharkViewer {
         }
       }
     });
+  }
+
+  compartmentLoaded(id) {
+    return (this.scene.getObjectByName(id) !== undefined);
   }
 
   centerCameraAroundCompartment(compartment) {
