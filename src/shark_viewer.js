@@ -436,7 +436,7 @@ export default class SharkViewer {
           if (key in this) {
             this[key] = newValue;
           }
-        }  
+        }
       });
     }
   }
@@ -449,7 +449,7 @@ export default class SharkViewer {
     return this.three_colors[0];
   }
 
-  
+
 
     // generates sphere mesh
   generateSphere(node) {
@@ -1065,16 +1065,16 @@ export default class SharkViewer {
   render() {
     this.renderer.clear();
     this.renderer.render(this.scene, this.camera);
-    
+
     if (this.onTop) {
       this.renderer.clearDepth();
     }
-    
+
     this.renderer.render(this.sceneOnTopable, this.camera);
   }
 
   // onTopable=true means that setValues({ onTop: true }) will make
-  // the neuron be rendered on top of (i.e., not occluded by) other neurons 
+  // the neuron be rendered on top of (i.e., not occluded by) other neurons
   // that had onTopable=false
   loadNeuron(filename, color, nodes, updateCamera=true, onTopable=false) {
     const neuron = this.createNeuron(nodes, color);
