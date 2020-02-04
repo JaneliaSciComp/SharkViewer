@@ -408,6 +408,7 @@ export default class SharkViewer {
     this.camera = null;
     this.cameraChangeCallback = null;
     this.onTop = false;
+    this.maxVolumeSize = 100000;
 
     this.setValues(args);
     // anything after the above line can not be set by the caller.
@@ -922,12 +923,14 @@ export default class SharkViewer {
 
     // put a camera in the scene
     this.fov = 45;
-    const cameraPosition = 100000;
+    const cameraPosition = this.maxVolumeSize;
+    const farClipping = cameraPosition * 2;
+    const nearClipping = 10;
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
       this.WIDTH / this.HEIGHT,
-      1,
-      cameraPosition
+      nearClipping,
+      farClipping
     );
 
     this.camera.position.z = cameraPosition;
@@ -953,6 +956,8 @@ export default class SharkViewer {
     }
 
     this.trackControls = new OrbitControls(this.camera, this.dom_element);
+    this.trackControls.maxDistance = cameraPosition;
+    this.trackControls.minDistance = 15;
     this.trackControls.addEventListener("change", this.render.bind(this));
     // TODO: have a callback here that reports the current position of the
     // camera. That way we can store it in the state and restore from there.
@@ -1084,9 +1089,9 @@ export default class SharkViewer {
     const position = calculateCameraPosition(this.fov, boundingSphere);
 
     if (updateCamera) {
-      this.camera.position.set(position.x, position.y, position.z);
       this.trackControls.update();
       this.trackControls.target.set(target.x, target.y, target.z);
+      this.camera.position.set(position.x, position.y, position.z);
     }
 
     neuron.name = filename;
@@ -1151,11 +1156,11 @@ export default class SharkViewer {
     loader.load(URL, object => {
       const exists = this.scene.getObjectByName(id);
       if (!exists) {
-        object = applySemiTransparentShader(object, color);
-        object.name = id;
+        const shadedObject = applySemiTransparentShader(object, color);
+        shadedObject.name = id;
         this.scene.add(object);
         if (updateCamera) {
-          this.centerCameraAroundCompartment(object);
+          this.centerCameraAroundCompartment(shadedObject);
         }
       }
     });
