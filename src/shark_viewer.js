@@ -4,7 +4,8 @@ export { swcParser };
 
 const THREE = require("three");
 require("three-obj-loader")(THREE);
-const OrbitControls = require("three-orbit-controls")(THREE);
+
+const OrbitUnlimitedControls = require("@janelia/three-orbit-unlimited-controls").default;
 
 const DEFAULT_POINT_THRESHOLD = 50;
 
@@ -955,7 +956,7 @@ export default class SharkViewer {
       this.dom_element.appendChild(mElement);
     }
 
-    this.trackControls = new OrbitControls(this.camera, this.dom_element);
+    this.trackControls = new OrbitUnlimitedControls(this.camera, this.dom_element);
     this.trackControls.maxDistance = cameraPosition;
     this.trackControls.minDistance = 15;
     this.trackControls.addEventListener("change", this.render.bind(this));
@@ -1034,7 +1035,7 @@ export default class SharkViewer {
           this.on_toggle_node(tracingId, sampleNumber);
         }
       } else {
-        if (event.shiftKey) {
+        if (event.shiftKey && this.trackControls.clicked) {
           this.trackControls.target = points[0].point;
         }
 
