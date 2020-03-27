@@ -9,7 +9,7 @@
     "@janelia/three-orbit-unlimited-controls": "^1.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
+    "@babel/cli": "^7.8.4",
     "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-class-properties": "^7.2.3",
     "@babel/polyfill": "^7.2.5",
@@ -60,6 +60,7 @@
   },
   "homepage": "https://github.com/JaneliaSciComp/SharkViewer#readme",
   "dependencies": {
+    "minimist": "^1.2.5",
     "terser-webpack-plugin": "^2.3.3"
   }
 }
