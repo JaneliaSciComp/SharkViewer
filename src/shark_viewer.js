@@ -3,6 +3,7 @@ import { NODE_PARTICLE_IMAGE, swcParser } from "./viewer/util";
 export { swcParser };
 
 const THREE = require("three");
+const SVGRenderer = require("three/examples/jsm/renderers/SVGRenderer");
 require("three-obj-loader")(THREE);
 
 const OrbitUnlimitedControls = require("@janelia/three-orbit-unlimited-controls").default;
@@ -560,7 +561,8 @@ export default class SharkViewer {
       // compute scale for particles, in pixels
       const particleScale =
         (0.5 * this.HEIGHT) /
-        this.renderer.getPixelRatio() /
+        // this.renderer.getPixelRatio() /
+        1 /
         Math.tan((0.5 * this.fov * Math.PI) / 180.0);
 
       const customAttributes = {
@@ -909,7 +911,8 @@ export default class SharkViewer {
     });
 
     // setup render
-    this.renderer = new THREE.WebGLRenderer({
+    // this.renderer = new THREE.WebGLRenderer({
+    this.renderer = new SVGRenderer.SVGRenderer({
       antialias: true // to get smoother output
     });
     this.renderer.setClearColor(this.backgroundColor, 1);
