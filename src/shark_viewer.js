@@ -411,6 +411,7 @@ export default class SharkViewer {
     this.cameraChangeCallback = null;
     this.onTop = false;
     this.maxVolumeSize = 100000;
+    this.minAnimateInterval = 50;
 
     this.setValues(args);
     // anything after the above line can not be set by the caller.
@@ -835,7 +836,6 @@ export default class SharkViewer {
         const coneMesh = new THREE.Mesh(coneGeom, coneMaterial);
 
         coneMaterial.onBeforeCompile = shader => {
-          // console.log( shader )
           shader.uniforms.alpha = { value: 0 };
           shader.vertexShader = `uniform float alpha;\n${shader.vertexShader}`;
           shader.vertexShader = shader.vertexShader.replace(
@@ -874,19 +874,29 @@ export default class SharkViewer {
         color: this.colors[this.colors.length - 1]
       });
       if (this.mode === "skeleton") material.color.set(this.colors[0]);
-      geometry = new THREE.Geometry();
+      geometry = new THREE.BufferGeometry();
+      const positions = [];
       Object.keys(swcJSON).forEach(node => {
         if (swcJSON[node].parent !== -1) {
           const vertices = generateSkeleton(
             swcJSON[node],
             swcJSON[swcJSON[node].parent]
           );
-          geometry.vertices.push(vertices.child);
-          geometry.vertices.push(vertices.parent);
+          // add the child points
+          const {x,y,z} = vertices.child;
+          positions.push(x,y,z);
+
+          // add the parent points
+          const {x: altx, y: alty, z: altz} = vertices.parent;
+          positions.push(altx, alty, altz);
         }
       });
-      const line = new THREE.LineSegments(geometry, material);
-      neuron.add(line);
+      if (positions.length > 0) {
+        geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+        geometry.computeBoundingSphere();
+        const line = new THREE.LineSegments(geometry, material);
+        neuron.add(line);
+      }
     }
     return neuron;
   }
@@ -1060,7 +1070,7 @@ export default class SharkViewer {
       if (this.animated) {
         this.render();
       }
-    } else if (timestamp - this.last_anim_timestamp > 50) {
+    } else if (timestamp - this.last_anim_timestamp > this.minAnimateInterval) {
       this.last_anim_timestamp = timestamp;
       if (this.animated) {
         this.render();
