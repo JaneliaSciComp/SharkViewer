@@ -61,6 +61,6 @@
   "homepage": "https://github.com/JaneliaSciComp/SharkViewer#readme",
   "dependencies": {
     "minimist": "^1.2.5",
-    "terser-webpack-plugin": "^2.3.3"
+    "terser-webpack-plugin": "^5.1.1"
   }
 }
