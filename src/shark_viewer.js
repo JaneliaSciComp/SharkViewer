@@ -262,12 +262,19 @@ function calculateBoundingSphere(swcJSON, boundingBox) {
 
   return { center, radius };
 }
-
-function calculateCameraPosition(fov, boundingSphere) {
+/** 
+ * Calculate the camera position on the edge of the bounding sphere
+ * @param {number} fov - the field of view for the scene
+ * @param {Object} boundingSphere - object describing radius and center point of the sphere
+ * @param {boolean} frontToBack - if true, then look down the Z-stack from point 0
+ * @returns {Object} THREE.Vector3 object used to position the camera
+ */
+function calculateCameraPosition(fov, boundingSphere, frontToBack) {
   const theta = (fov * (Math.PI / 180.0)) / 2.0;
   const d = boundingSphere.radius / Math.sin(theta);
   const { center } = boundingSphere;
-  return new THREE.Vector3(center.x, center.y, center.z + d);
+  const z = frontToBack ? -(center.z + d) : center.z + d;
+  return new THREE.Vector3(center.x, center.y, z);
 }
 
 function applySemiTransparentShader(object, color) {
@@ -937,7 +944,7 @@ export default class SharkViewer {
     this.camera.position.z = cameraPosition;
 
     if (this.showAxes) {
-      this.axes = new THREE.AxisHelper(this.showAxes);
+      this.axes = new THREE.AxesHelper(this.showAxes);
       this.scene.add(this.axes);
     }
 
@@ -1079,15 +1086,24 @@ export default class SharkViewer {
     this.renderer.render(this.sceneOnTopable, this.camera);
   }
 
-  // onTopable=true means that setValues({ onTop: true }) will make
-  // the neuron be rendered on top of (i.e., not occluded by) other neurons
-  // that had onTopable=false
-  loadNeuron(filename, color, nodes, updateCamera=true, onTopable=false) {
+  /**
+   * Load a neuron from an swc file into the current scene.
+   * @param {string} filename - unique name for the neuron
+   * @param {?string} color - hexadecimal string to set the color of the neuron
+   * @param {JSON} nodes - JSON string generated from swcParser
+   * @param {boolean} [updateCamera=true] - Should the camera position update
+   * after the neuron is added to the scene.
+   * @param {boolean} [onTopable=false] - If true, the neuron will be rendered
+   * on top of (i.e., not occluded by) other neurons that had onTopable=false
+   * @param {boolean} [frontToBack=false] - if true, then look down the Z-stack from point 0
+   * @returns {null}
+   */
+  loadNeuron(filename, color, nodes, updateCamera=true, onTopable=false, frontToBack=false) {
     const neuron = this.createNeuron(nodes, color);
     const boundingBox = calculateBoundingBox(nodes);
     const boundingSphere = calculateBoundingSphere(nodes, boundingBox);
     const target = boundingSphere.center;
-    const position = calculateCameraPosition(this.fov, boundingSphere);
+    const position = calculateCameraPosition(this.fov, boundingSphere, frontToBack);
 
     if (updateCamera) {
       this.trackControls.update();
