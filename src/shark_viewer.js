@@ -945,6 +945,7 @@ export default class SharkViewer {
 
     if (this.showAxes) {
       this.axes = new THREE.AxesHelper(this.showAxes);
+      this.axes.name = "axislines";
       this.scene.add(this.axes);
     }
 
