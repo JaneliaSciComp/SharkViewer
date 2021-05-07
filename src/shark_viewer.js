@@ -378,7 +378,7 @@ export default class SharkViewer {
    *}
    */
   constructor(args) {
-    this.swc = {};
+    this.swc = null;
     // mode (sphere, particle, skeleton)
     this.mode = "particle";
     // flip y axis
@@ -953,8 +953,16 @@ export default class SharkViewer {
       this.camera.up.setY(-1);
     }
 
-    const neuron = this.createNeuron(this.swc);
-    this.scene.add(neuron);
+    if (this.swc) {
+      const neuron = this.createNeuron(this.swc);
+      const boundingBox = calculateBoundingBox(this.swc);
+      const boundingSphere = calculateBoundingSphere(this.swc, boundingBox);
+      // store neuron status and bounding sphere for later use
+      // when resetting the view.
+      neuron.isNeuron = true;
+      neuron.boundingSphere = boundingSphere;
+      this.scene.add(neuron);
+    }
 
     // for elements that may be rendered on top
     this.sceneOnTopable = new THREE.Scene();
@@ -995,6 +1003,7 @@ export default class SharkViewer {
   resetView() {
     this.trackControls.reset();
     this.trackControls.update();
+    this.camera.up.set(0,1,0);
   }
 
   restoreView(x = 0, y = 0, z = 0, target) {
@@ -1003,6 +1012,18 @@ export default class SharkViewer {
       this.trackControls.target.set(target.x, target.y, target.z);
     }
     this.trackControls.update();
+  }
+
+  resetAroundFirstNeuron({frontToBack} = {frontToBack: true}) {
+    const neurons = this.scene.children.filter(c => c.isNeuron);
+    if (neurons.length > 0) {
+      const target = neurons[0].boundingSphere.center;
+      const position = calculateCameraPosition(this.fov, neurons[0].boundingSphere, frontToBack);
+      this.trackControls.update();
+      this.trackControls.target.set(target.x, target.y, target.z);
+      this.camera.position.set(position.x, position.y, position.z);
+      this.camera.up.set(0,1,0);
+    }
   }
 
   // TODO: alt click should target meshes and center the orbit controls
@@ -1113,6 +1134,10 @@ export default class SharkViewer {
     }
 
     neuron.name = filename;
+    // store neuron status and bounding sphere for later use
+    // when resetting the view.
+    neuron.isNeuron = true;
+    neuron.boundingSphere = boundingSphere;
     const scene = onTopable ? this.sceneOnTopable : this.scene;
     scene.add(neuron)
   }
