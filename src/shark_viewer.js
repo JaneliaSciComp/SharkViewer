@@ -1187,6 +1187,11 @@ export default class SharkViewer {
     return (this.scene.getObjectByName(id) !== undefined);
   }
 
+  /**
+   * Given a compartment object, place the camera focus on it.
+   * @param {object} compartment - Three object representing the compartment
+   * @return null
+   */
   centerCameraAroundCompartment(compartment) {
     const boundingBox = new THREE.Box3().setFromObject(compartment);
     this.camera.position.set(boundingBox.min.x - 10, boundingBox.min.y - 10, boundingBox.min.z - 10);
