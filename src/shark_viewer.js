@@ -896,6 +896,38 @@ export default class SharkViewer {
     return neuron;
   }
 
+  // copied from example at http://jsfiddle.net/b97zd1a3/16/
+  addAxes() {
+    const CANVAS_WIDTH = 200;
+    const CANVAS_HEIGHT = 200;
+    const axesRenderer = new THREE.WebGLRenderer( { alpha: true } ); // clear
+    axesRenderer.setClearColor( 0x000000, 0 );
+    axesRenderer.setSize( CANVAS_WIDTH, CANVAS_HEIGHT );
+    this.axesRenderer = axesRenderer;
+
+    const axesCanvas = this.dom_element.appendChild( axesRenderer.domElement );
+    axesCanvas.setAttribute('id', 'axesCanvas');
+    axesCanvas.style.width = CANVAS_WIDTH;
+    axesCanvas.style.height = CANVAS_HEIGHT;
+    axesCanvas.style.position = "absolute";
+    axesCanvas.style.zIndex = 200;
+    axesCanvas.style.bottom = "5px";
+    axesCanvas.style.right = "5px";
+
+
+
+    const axesCamera = new THREE.PerspectiveCamera( 50, CANVAS_WIDTH / CANVAS_HEIGHT, 1, 1000 );
+    axesCamera.up = this.camera.up; // important!
+    this.axesCamera = axesCamera;
+
+    const axesScene = new THREE.Scene();
+    const axesPos = new THREE.Vector3( 0,0,0 );
+    axesScene.add( new THREE.ArrowHelper( new THREE.Vector3( 1,0,0 ), axesPos, 60, 0xFF0000, 20, 10 ) );
+    axesScene.add( new THREE.ArrowHelper( new THREE.Vector3( 0,1,0 ), axesPos, 60, 0x00FF00, 20, 10 ) );
+    axesScene.add( new THREE.ArrowHelper( new THREE.Vector3( 0,0,1 ), axesPos, 60, 0x0000FF, 20, 10 ) );
+    this.axesScene = axesScene;
+  }
+
   // Sets up three.js scene
   init() {
     if (this.effect === "noeffect") this.effect = false;
@@ -944,9 +976,7 @@ export default class SharkViewer {
     this.camera.position.z = cameraPosition;
 
     if (this.showAxes) {
-      this.axes = new THREE.AxesHelper(this.showAxes);
-      this.axes.name = "axislines";
-      this.scene.add(this.axes);
+      this.addAxes();
     }
 
     if (this.flip === true) {
@@ -1092,6 +1122,12 @@ export default class SharkViewer {
         this.render();
       }
       this.trackControls.update();
+      if (this.showAxes) {
+        this.axesCamera.position.copy( this.camera.position );
+        this.axesCamera.position.sub( this.trackControls.target );
+        this.axesCamera.position.setLength( 300 );
+        this.axesCamera.lookAt( this.axesScene.position );
+      }
     }
     window.requestAnimationFrame(this.animate.bind(this));
   }
@@ -1106,6 +1142,9 @@ export default class SharkViewer {
     }
 
     this.renderer.render(this.sceneOnTopable, this.camera);
+    if (this.showAxes) {
+      this.axesRenderer.render(this.axesScene, this.axesCamera);
+    }
   }
 
   /**
