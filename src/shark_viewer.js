@@ -273,7 +273,11 @@ function calculateCameraPosition(fov, boundingSphere, frontToBack) {
   const theta = (fov * (Math.PI / 180.0)) / 2.0;
   const d = boundingSphere.radius / Math.sin(theta);
   const { center } = boundingSphere;
-  const z = frontToBack ? -(center.z + d) : center.z + d;
+  // If negative z is greater than the .maxVolumeSize, the camera will
+  // get stuck at that point and wont be able to dolly in or out. Forcing
+  // the z position to be at least half the negative maxVolumeSize seems
+  // to fix the issue.
+  const z = Math.max(-(this.maxVolumeSize/2), frontToBack ? -(center.z + d) : center.z + d);
   return new THREE.Vector3(center.x, center.y, z);
 }
 
