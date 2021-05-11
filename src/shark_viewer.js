@@ -269,7 +269,7 @@ function calculateBoundingSphere(swcJSON, boundingBox) {
  * @param {boolean} frontToBack - if true, then look down the Z-stack from point 0
  * @returns {Object} THREE.Vector3 object used to position the camera
  */
-function calculateCameraPosition(fov, boundingSphere, frontToBack) {
+function calculateCameraPosition(fov, boundingSphere, frontToBack, maxVolumeSize) {
   const theta = (fov * (Math.PI / 180.0)) / 2.0;
   const d = boundingSphere.radius / Math.sin(theta);
   const { center } = boundingSphere;
@@ -277,7 +277,7 @@ function calculateCameraPosition(fov, boundingSphere, frontToBack) {
   // get stuck at that point and wont be able to dolly in or out. Forcing
   // the z position to be at least half the negative maxVolumeSize seems
   // to fix the issue.
-  const z = Math.max(-(this.maxVolumeSize/2), frontToBack ? -(center.z + d) : center.z + d);
+  const z = Math.max(-(maxVolumeSize/2), frontToBack ? -(center.z + d) : center.z + d);
   return new THREE.Vector3(center.x, center.y, z);
 }
 
@@ -1052,7 +1052,7 @@ export default class SharkViewer {
     const neurons = this.scene.children.filter(c => c.isNeuron);
     if (neurons.length > 0) {
       const target = neurons[0].boundingSphere.center;
-      const position = calculateCameraPosition(this.fov, neurons[0].boundingSphere, frontToBack);
+      const position = calculateCameraPosition(this.fov, neurons[0].boundingSphere, frontToBack, this.maxVolumeSize);
       this.trackControls.update();
       this.trackControls.target.set(target.x, target.y, target.z);
       this.camera.position.set(position.x, position.y, position.z);
@@ -1168,7 +1168,7 @@ export default class SharkViewer {
     const boundingBox = calculateBoundingBox(nodes);
     const boundingSphere = calculateBoundingSphere(nodes, boundingBox);
     const target = boundingSphere.center;
-    const position = calculateCameraPosition(this.fov, boundingSphere, frontToBack);
+    const position = calculateCameraPosition(this.fov, boundingSphere, frontToBack, this.maxVolumeSize);
 
     if (updateCamera) {
       this.trackControls.update();
