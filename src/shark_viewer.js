@@ -278,7 +278,6 @@ function calculateCameraPosition(fov, boundingSphere, frontToBack, maxVolumeSize
   // the z position to be at least half the negative maxVolumeSize seems
   // to fix the issue.
   const z = Math.max(-(maxVolumeSize/2), frontToBack ? center.z - d : center.z + d);
-  console.log({x: center.x, y: center.y, z});
   return new THREE.Vector3(center.x, center.y, z);
 }
 
