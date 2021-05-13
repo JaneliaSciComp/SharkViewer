@@ -613,15 +613,15 @@ export default class SharkViewer {
         indexLookup[customAttributes.radius.value.length - 1] =
           swcJSON[node].sampleNumber;
      });
-      geometry.addAttribute(
+      geometry.setAttribute(
         "position",
         new THREE.Float32BufferAttribute(customAttributes.vertices.value, 3)
       );
-      geometry.addAttribute(
+      geometry.setAttribute(
         "radius",
         new THREE.Float32BufferAttribute(customAttributes.radius.value, 1)
       );
-      geometry.addAttribute(
+      geometry.setAttribute(
         "typeColor",
         new THREE.Float32BufferAttribute(customAttributes.typeColor.value, 3)
       );
@@ -808,23 +808,23 @@ export default class SharkViewer {
         coneGeom.setIndex(
           new THREE.Uint32BufferAttribute(coneAttributes.indices.value, 1)
         );
-        coneGeom.addAttribute(
+        coneGeom.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(coneAttributes.vertices.value, 3)
         );
-        coneGeom.addAttribute(
+        coneGeom.setAttribute(
           "radius",
           new THREE.Float32BufferAttribute(coneAttributes.radius.value, 1)
         );
-        coneGeom.addAttribute(
+        coneGeom.setAttribute(
           "typeColor",
           new THREE.Float32BufferAttribute(coneAttributes.typeColor.value, 3)
         );
-        coneGeom.addAttribute(
+        coneGeom.setAttribute(
           "normal",
           new THREE.Float32BufferAttribute(coneAttributes.normals.value, 3)
         );
-        coneGeom.addAttribute(
+        coneGeom.setAttribute(
           "uv",
           new THREE.Float32BufferAttribute(coneAttributes.uv.value, 2)
         );
