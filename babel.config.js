@@ -11,6 +11,7 @@ module.exports = function(api) {
           safari: "11.1"
         },
         useBuiltIns: "usage",
+        "corejs": "3.6.5",
         forceAllTransforms: true
       }
     ]
