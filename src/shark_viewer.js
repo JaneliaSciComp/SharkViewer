@@ -952,7 +952,7 @@ export default class SharkViewer {
     });
 
     // setup render
-    this.renderer = new THREE.WebGLRenderer({
+    this.renderer = new THREE.WebGL1Renderer({
       antialias: true // to get smoother output
     });
     this.renderer.setClearColor(this.backgroundColor, 1);
