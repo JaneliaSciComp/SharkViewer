@@ -1,6 +1,6 @@
 {
   "name": "@janelia/sharkviewer",
-  "version": "1.7.6",
+  "version": "1.7.7",
   "description": "SWC neuron file viewer",
   "main": "dist/shark_viewer.js",
   "peerDependencies": {
