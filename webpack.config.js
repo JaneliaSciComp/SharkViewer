@@ -6,6 +6,7 @@ module.exports = {
   // devtool: 'source-map',
   devServer: {
     contentBase: './lib',
+    open: true
   },
   externals: {
     three: 'THREE',
