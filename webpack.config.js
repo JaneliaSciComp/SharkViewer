@@ -5,13 +5,12 @@ module.exports = {
   devtool: 'inline-source-map',
   // devtool: 'source-map',
   devServer: {
-    contentBase: './lib',
+    static: './lib',
     open: true
   },
   externals: {
     three: 'THREE',
   },
-  watch: false,
   entry: './src/shark_viewer.js',
   output: {
     filename: 'shark_viewer.js',
