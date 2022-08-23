@@ -58,5 +58,8 @@
   "bugs": {
     "url": "https://github.com/JaneliaSciComp/SharkViewer/issues"
   },
-  "homepage": "https://github.com/JaneliaSciComp/SharkViewer#readme"
+  "homepage": "https://github.com/JaneliaSciComp/SharkViewer#readme",
+  "dependencies": {
+    "stats.js": "^0.17.0"
+  }
 }

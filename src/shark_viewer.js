@@ -4,6 +4,7 @@ export { swcParser };
 
 const THREE = require("three");
 require("three-obj-loader")(THREE);
+const Stats = require('stats.js');
 
 const OrbitUnlimitedControls = require("@janelia/three-orbit-unlimited-controls").default;
 
@@ -402,7 +403,7 @@ export default class SharkViewer {
     this.metadata = false;
     this.on_select_node = null;
     this.on_toggle_node = null;
-    this.show_stats = false;
+    this.showStats = false;
     this.animated = false;
     this.three = THREE;
 
@@ -977,6 +978,16 @@ export default class SharkViewer {
       farClipping
     );
 
+    if (this.showStats) {
+      this.stats = new Stats();
+      this.stats.showPanel(0);
+      this.stats.domElement.style.position = 'absolute';
+      this.dom_element.style.position = 'relative';
+      this.stats.domElement.style.top = '0px';
+      this.stats.domElement.style.zIndex = 100;
+      this.dom_element.appendChild(this.stats.dom);
+    }
+
     this.camera.position.z = cameraPosition;
 
     if (this.showAxes) {
@@ -1115,6 +1126,9 @@ export default class SharkViewer {
 
   // animation loop
   animate(timestamp = null) {
+    if (this.stats) {
+      this.stats.begin();
+    }
     if (!this.last_anim_timestamp) {
       this.last_anim_timestamp = timestamp;
       if (this.animated) {
@@ -1132,6 +1146,9 @@ export default class SharkViewer {
         this.axesCamera.position.setLength( 300 );
         this.axesCamera.lookAt( this.axesScene.position );
       }
+    }
+    if (this.stats) {
+      this.stats.end();
     }
     window.requestAnimationFrame(this.animate.bind(this));
   }
