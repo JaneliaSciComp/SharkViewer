@@ -38,6 +38,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve --config webpack.config.js",
     "build": "NODE_ENV=production npx babel ./src --out-dir ./dist --ignore '**/*.test.jsx' --ignore '**/*.test.js' && npx webpack --config webpack.prod.config.js",
+    "docs": "NODE_ENV=production npx babel ./src --out-dir ./dist --ignore '**/*.test.jsx' --ignore '**/*.test.js' && npx webpack --config webpack.docs.config.js",
     "prebuild": "rimraf dist",
     "dev": "NODE_ENV=development npx babel ./src --out-dir ./dist --ignore '**/*.test.jsx' --ignore '**/*.test.js' --source-maps && npx webpack",
     "dev-watch": "NODE_ENV=development npx babel ./src --out-dir ./dist --ignore '**/*.test.jsx' --ignore '**/*.test.js' --source-maps --watch --verbose",
