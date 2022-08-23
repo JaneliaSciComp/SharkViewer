@@ -4,7 +4,8 @@ export function swcParser(swcFile) {
   const swcAr = swcFile.split("\n");
   const swcJSON = {};
 
-  const float = "-?\\d*(?:\\.\\d+)?";
+  // const float = "-?\\d*(?:\\.\\d+)?";
+  const float = "[+\\-]?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+\\-]?\\d+)?";
   const pattern = new RegExp(
     "^[ \\t]*(" +
       [
