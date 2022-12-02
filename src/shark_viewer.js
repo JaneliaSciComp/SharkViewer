@@ -1048,7 +1048,7 @@ export default class SharkViewer {
   resetView() {
     this.trackControls.reset();
     this.trackControls.update();
-    this.camera.up.set(0,1,0);
+    this.camera.up.set(0, this.flip ? -1 : 1, 0);
   }
 
   restoreView(x = 0, y = 0, z = 0, target) {
@@ -1067,7 +1067,7 @@ export default class SharkViewer {
       this.trackControls.update();
       this.trackControls.target.set(target.x, target.y, target.z);
       this.camera.position.set(position.x, position.y, position.z);
-      this.camera.up.set(0,1,0);
+      this.camera.up.set(0, this.flip ? -1 : 1, 0);
     }
   }
 
